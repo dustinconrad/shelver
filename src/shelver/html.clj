@@ -1,30 +1,36 @@
 (ns shelver.html
-  (:require
-    (hiccup [page :refer [html5 include-js include-css]])))
+  (:require [net.cgrand.enlive-html :as html]))
 
-(def bootstrap-version "3.3.4")
-(def jquery-version "1.11.2")
+(def navigation-items
+  {"Home" "/"
+   "About" "/about"
+   "Contact" "/contact"})
 
-(defn index []
-  (html5
-    [:head
-     [:meta {:charset "utf-8"}]
-     [:meta {:http-equiv "X-UA-Compatible" :content "IE=edge"}]
-     [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
-     [:meta {:name "description" :content "shelver"}]
-     [:meta {:name "author" :content "Dustin Conrad"}]
-     [:title "shelver"]
-
-     (include-css
-       "//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css"
-       (str "//maxcdn.bootstrapcdn.com/bootstrap/" bootstrap-version "/css/bootstrap.min.css")
-       (str "//maxcdn.bootstrapcdn.com/bootstrap/" bootstrap-version "/css/bootstrap-theme.min.css"))]
-
-    [:body
-     [:div#main-area.container
-      [:p "This is an example project for systems."]]
+(html/defsnippet header "templates/header.html"
+                 [:body :div.navbar]
+                 [current-path]
+                 [:a.brand] (html/content "Enlive starter kit")
+                 [:ul.nav [:li html/first-of-type]] (html/clone-for [[caption url] navigation-items]
+                                                                    [:li] (if (= current-path url)
+                                                                            (html/set-attr :class "active")
+                                                                            identity)
+                                                                    [:li :a] (html/content caption)
+                                                                    [:li :a] (html/set-attr :href url)))
 
 
-     (include-js
-       (str "https://ajax.googleapis.com/ajax/libs/jquery/" jquery-version "/jquery.min.js")
-       (str "//maxcdn.bootstrapcdn.com/bootstrap/" bootstrap-version "/js/bootstrap.min.js"))]))
+
+(html/defsnippet content "templates/content.html"
+                 [:#content]
+                 [replacements]
+                 [:#content html/any-node] (html/replace-vars replacements))
+
+(html/deftemplate base "templates/base.html"
+                  [{:keys [path]}]
+                  [:head :title] (html/content "Enlive starter kit")
+                  [:body] (html/do-> (html/append (header path))
+                                     (html/append (content {:header "This is an interpolated header"
+                                                            :content_part_1 "Use this document as a way to quick start any new project"
+                                                            :content_part_2 "All you get is this message and a barebones HTML document"}))))
+
+(defn index [request]
+  (base {:path (:uri request)}))

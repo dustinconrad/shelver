@@ -8,7 +8,7 @@
                  [org.danielsz/system "0.1.6"]
                  [environ "1.0.0"]
                  [ring "1.3.2"]
-                 [hiccup "1.0.5"]
+                 [enlive "1.1.5"]
                  [ring/ring-defaults "0.1.4"]
                  [compojure "1.3.3"]]
   :main ^:skip-aot shelver.core
