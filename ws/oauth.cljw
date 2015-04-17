@@ -1,0 +1,87 @@
+;; gorilla-repl.fileformat = 1
+
+;; **
+;;; # Gorilla REPL
+;;; 
+;;; Welcome to gorilla :-)
+;;; 
+;;; Shift + enter evaluates code. Hit ctrl+g twice in quick succession or click the menu icon (upper-right corner) for more commands ...
+;;; 
+;;; It's a good habit to run each worksheet in its own namespace: feel free to use the declaration we've provided below if you'd like.
+;; **
+
+;; @@
+(require ['oauth.client :as 'oauth])
+;; @@
+;; =>
+;;; {"type":"html","content":"<span class='clj-nil'>nil</span>","value":"nil"}
+;; <=
+
+;; @@
+(def consumer-key "EV7wnkrFg211dYRJNf8bg")
+(def consumer-secret "wNW0K3qUnjHlcbaO6ur0R7ia1TKddiRnoLrx8vLxY")
+;; @@
+;; =>
+;;; {"type":"html","content":"<span class='clj-var'>#&#x27;itchy-brook/consumer-secret</span>","value":"#'itchy-brook/consumer-secret"}
+;; <=
+
+;; @@
+consumer-key
+;; @@
+;; =>
+;;; {"type":"html","content":"<span class='clj-string'>&quot;EV7wnkrFg211dYRJNf8bg&quot;</span>","value":"\"EV7wnkrFg211dYRJNf8bg\""}
+;; <=
+
+;; @@
+(def consumer (oauth/make-consumer consumer-key
+                                   consumer-secret
+                                   "https://www.goodreads.com/oauth/request_token"
+                                   "https://www.goodreads.com/oauth/access_token"
+                                   "https://www.goodreads.com/oauth/authorize"
+                                   :hmac-sha1))
+;; @@
+;; =>
+;;; {"type":"html","content":"<span class='clj-var'>#&#x27;itchy-brook/consumer</span>","value":"#'itchy-brook/consumer"}
+;; <=
+
+;; @@
+(def request-token (oauth/request-token consumer nil))
+;; @@
+;; =>
+;;; {"type":"html","content":"<span class='clj-var'>#&#x27;itchy-brook/request-token</span>","value":"#'itchy-brook/request-token"}
+;; <=
+
+;; @@
+request-token
+;; @@
+;; =>
+;;; {"type":"list-like","open":"<span class='clj-map'>{</span>","close":"<span class='clj-map'>}</span>","separator":", ","items":[{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:oauth_token</span>","value":":oauth_token"},{"type":"html","content":"<span class='clj-string'>&quot;pObMkJHxoyfcNEJRmWg&quot;</span>","value":"\"pObMkJHxoyfcNEJRmWg\""}],"value":"[:oauth_token \"pObMkJHxoyfcNEJRmWg\"]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:oauth_token_secret</span>","value":":oauth_token_secret"},{"type":"html","content":"<span class='clj-string'>&quot;QFeNT2ogEzuWFSHSrUQRlEroyAD8zxqZQVELX5Ns2Wo&quot;</span>","value":"\"QFeNT2ogEzuWFSHSrUQRlEroyAD8zxqZQVELX5Ns2Wo\""}],"value":"[:oauth_token_secret \"QFeNT2ogEzuWFSHSrUQRlEroyAD8zxqZQVELX5Ns2Wo\"]"}],"value":"{:oauth_token \"pObMkJHxoyfcNEJRmWg\", :oauth_token_secret \"QFeNT2ogEzuWFSHSrUQRlEroyAD8zxqZQVELX5Ns2Wo\"}"}
+;; <=
+
+;; @@
+(oauth/user-approval-uri consumer 
+                             (:oauth_token request-token))
+;; @@
+;; =>
+;;; {"type":"html","content":"<span class='clj-string'>&quot;https://www.goodreads.com/oauth/authorize?oauth_token=pObMkJHxoyfcNEJRmWg&quot;</span>","value":"\"https://www.goodreads.com/oauth/authorize?oauth_token=pObMkJHxoyfcNEJRmWg\""}
+;; <=
+
+;; @@
+(def access-token-response (oauth/access-token consumer 
+                                                   request-token
+                                                   nil))
+;; @@
+;; =>
+;;; {"type":"html","content":"<span class='clj-var'>#&#x27;itchy-brook/access-token-response</span>","value":"#'itchy-brook/access-token-response"}
+;; <=
+
+;; @@
+access-token-response
+;; @@
+;; =>
+;;; {"type":"list-like","open":"<span class='clj-map'>{</span>","close":"<span class='clj-map'>}</span>","separator":", ","items":[{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:oauth_token</span>","value":":oauth_token"},{"type":"html","content":"<span class='clj-string'>&quot;e5msRJKYnmPXrCzHDPYw&quot;</span>","value":"\"e5msRJKYnmPXrCzHDPYw\""}],"value":"[:oauth_token \"e5msRJKYnmPXrCzHDPYw\"]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:oauth_token_secret</span>","value":":oauth_token_secret"},{"type":"html","content":"<span class='clj-string'>&quot;iRcbGRguLbujXY8nNpid03Adn8FxJgz61tIBpJO46M&quot;</span>","value":"\"iRcbGRguLbujXY8nNpid03Adn8FxJgz61tIBpJO46M\""}],"value":"[:oauth_token_secret \"iRcbGRguLbujXY8nNpid03Adn8FxJgz61tIBpJO46M\"]"}],"value":"{:oauth_token \"e5msRJKYnmPXrCzHDPYw\", :oauth_token_secret \"iRcbGRguLbujXY8nNpid03Adn8FxJgz61tIBpJO46M\"}"}
+;; <=
+
+;; @@
+
+;; @@
