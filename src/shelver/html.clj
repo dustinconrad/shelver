@@ -29,8 +29,23 @@
 ;                                                            :content_part_1 "Use this document as a way to quick start any new project"
 ;                                                            :content_part_2 "All you get is this message and a barebones HTML document"}))))
 
-(html/deftemplate base "templates/base.html" [{:keys [title]}]
-                  [:head :title] (html/content title))
+(html/defsnippet nav "templates/nav.html" [:body :div#nav] [current-path]
+                 [:ul.nav [:li html/first-of-type]] (html/clone-for [[caption url] navigation-items]
+                                                                    [:li] (if (= current-path url)
+                                                                            (html/set-attr :class "active")
+                                                                            identity)
+                                                                    [:li :a] (html/content caption)
+                                                                    [:li :a] (html/set-attr :href url)))
+
+(html/deftemplate base "templates/base.html" [{:keys [path] :as req} {:keys [title] :as props}]
+                  [:head :title] (html/content title)
+                  [:body] (html/do-> (html/append (nav path))))
 
 (defn index [request]
-  (base {:title "shelver - home"}))
+  (base request {:title "shelver"}))
+
+(defn about [request]
+  (base request {:title "shelver - about"}))
+
+(defn contacts [request]
+  (base request {:title "shelver - contacts"}))
