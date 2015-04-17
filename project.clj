@@ -10,7 +10,8 @@
                  [ring "1.3.2"]
                  [enlive "1.1.5"]
                  [ring/ring-defaults "0.1.4"]
-                 [compojure "1.3.3"]]
+                 [compojure "1.3.3"]
+                 [clj-oauth "1.5.2"]]
   :main ^:skip-aot shelver.core
   :target-path "target/%s"
   :profiles {:dev     {:source-paths ["dev"]
