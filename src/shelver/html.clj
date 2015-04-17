@@ -40,7 +40,7 @@
 
 (html/deftemplate base "templates/base.html" [{:keys [uri] :as req} {:keys [title] :as props}]
                   [:head :title] (html/content title)
-                  [:body :div.navbar] (html/content (nav uri)))
+                  [:body :div.navbar] (html/substitute (nav uri)))
 
 (defn index [request]
   (base request {:title "shelver"}))
