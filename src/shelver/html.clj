@@ -1,10 +1,11 @@
 (ns shelver.html
-  (:require [net.cgrand.enlive-html :as html]))
+  (:require [net.cgrand.enlive-html :as html]
+            [shelver.util :as util]))
 
 (def navigation-items
-  {"Home" "/"
-   "About" "/about"
-   "Contact" "/contact"})
+  [["Home" "/"]
+   ["About" "/about"]
+   ["Contact" "/contact"]])
 
 ;(html/defsnippet header "templates/header.html"
 ;                 [:body :div.navbar]
@@ -37,9 +38,9 @@
                                                                     [:li :a] (html/content caption)
                                                                     [:li :a] (html/set-attr :href url)))
 
-(html/deftemplate base "templates/base.html" [{:keys [path] :as req} {:keys [title] :as props}]
+(html/deftemplate base "templates/base.html" [{:keys [uri] :as req} {:keys [title] :as props}]
                   [:head :title] (html/content title)
-                  [:body] (html/do-> (html/append (nav path))))
+                  [:body :div.navbar] (html/content (nav uri)))
 
 (defn index [request]
   (base request {:title "shelver"}))
