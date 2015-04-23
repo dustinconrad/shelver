@@ -7,8 +7,8 @@
 ;secret: wNW0K3qUnjHlcbaO6ur0R7ia1TKddiRnoLrx8vLxY
 
 (defn default-oauth-client []
-  (->> (oauth/map->DefaultOAuthClient {:consumer-key      "EV7wnkrFg211dYRJNf8bg"
-                                       :consumer-secret   "wNW0K3qUnjHlcbaO6ur0R7ia1TKddiRnoLrx8vLxY"
+  (->> (oauth/map->DefaultOAuthClient {:api-key      "EV7wnkrFg211dYRJNf8bg"
+                                       :api-secret   "wNW0K3qUnjHlcbaO6ur0R7ia1TKddiRnoLrx8vLxY"
                                        :request-token-url "https://www.goodreads.com/oauth/request_token"
                                        :access-token-url  "https://www.goodreads.com/oauth/access_token"
                                        :authorize-url     "https://www.goodreads.com/oauth/authorize"

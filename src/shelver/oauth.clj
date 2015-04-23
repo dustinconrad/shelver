@@ -11,15 +11,15 @@
   (access-token [this request-token verifier])
   (credentials [this access-token request-method request-uri params]))
 
-(defrecord DefaultOAuthClient [consumer-key consumer-secret
+(defrecord DefaultOAuthClient [api-key api-secret
                                request-token-url access-token-url authorize-url
                                signature-method]
   component/Lifecycle
   (start [component]
     (if (:consumer component)
       component
-      (let [consumer (oauth/make-consumer consumer-key
-                                          consumer-secret
+      (let [consumer (oauth/make-consumer api-key
+                                          api-secret
                                           request-token-url
                                           access-token-url
                                           authorize-url
