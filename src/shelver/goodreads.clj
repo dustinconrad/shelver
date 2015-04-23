@@ -2,9 +2,6 @@
   (:require [shelver.oauth :as oauth]
             [clj-http.client :as clj-http]))
 
-;key: EV7wnkrFg211dYRJNf8bg
-;secret: wNW0K3qUnjHlcbaO6ur0R7ia1TKddiRnoLrx8vLxY
-
 (defprotocol GoodreadsClient
   (auth-user [this]))
 

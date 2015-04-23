@@ -1,14 +1,12 @@
 (ns shelver.oauth-test
   (:require [shelver.oauth :as oauth]
             [com.stuartsierra.component :as component]
-            [clojure.test :refer :all]))
-
-;key: EV7wnkrFg211dYRJNf8bg
-;secret: wNW0K3qUnjHlcbaO6ur0R7ia1TKddiRnoLrx8vLxY
+            [clojure.test :refer :all]
+            [environ.core :refer [env]]))
 
 (defn default-oauth-client []
-  (->> (oauth/map->DefaultOAuthClient {:api-key      "EV7wnkrFg211dYRJNf8bg"
-                                       :api-secret   "wNW0K3qUnjHlcbaO6ur0R7ia1TKddiRnoLrx8vLxY"
+  (->> (oauth/map->DefaultOAuthClient {:api-key           (env :goodreads-api-key)
+                                       :api-secret        (env :goodreads-api-secret)
                                        :request-token-url "https://www.goodreads.com/oauth/request_token"
                                        :access-token-url  "https://www.goodreads.com/oauth/access_token"
                                        :authorize-url     "https://www.goodreads.com/oauth/authorize"
