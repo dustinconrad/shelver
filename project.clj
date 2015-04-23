@@ -11,7 +11,8 @@
                  [enlive "1.1.5"]
                  [ring/ring-defaults "0.1.4"]
                  [compojure "1.3.3"]
-                 [clj-oauth "1.5.2"]]
+                 [clj-oauth "1.5.2"]
+                 [clj-http "1.1.0"]]
   :plugins [[lein-gorilla "0.3.4"]]
   :main ^:skip-aot shelver.core
   :target-path "target/%s"
