@@ -1,14 +1,12 @@
 /target
 /classes
-/checkouts
 pom.xml
 pom.xml.asc
 *.jar
 *.class
 /.nrepl-port
-.hgignore
-.hg/
 .idea/
 *.iml
 .lein-repl-history
 .gorilla-port
+.lein-env
