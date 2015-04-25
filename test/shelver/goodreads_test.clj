@@ -16,8 +16,7 @@
 
 (deftest test-goodreads-client
   (testing "Testing"
-    (let [goodreads-client (gr/new-goodreads-client (default-oauth-client) (env :goodreads-access-token))]
+    (let [goodreads-client (gr/new-goodreads-client (default-oauth-client) (env :goodreads-access-token) nil)]
       (testing "auth-user"
-        (let [body (->> (gr/auth-user goodreads-client)
-                        :body)]
-          (is (some #(= [:name ["Conrad"]] ((juxt :tag :content) %)) (xml-seq body))))))))
+        (let [resp (gr/auth-user goodreads-client)]
+          (is (some #(= [:name ["Conrad"]] ((juxt :tag :content) %)) (xml-seq (:body resp)))))))))
