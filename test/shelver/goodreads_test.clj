@@ -19,4 +19,7 @@
     (let [goodreads-client (gr/new-goodreads-client (default-oauth-client) (env :goodreads-access-token) nil)]
       (testing "auth-user"
         (let [resp (gr/auth-user goodreads-client)]
-          (is (some #(= [:name ["Conrad"]] ((juxt :tag :content) %)) (xml-seq (:body resp)))))))))
+          (is (some #(= [:name ["Conrad"]] ((juxt :tag :content) %)) (xml-seq (:body resp))))))
+      (testing "list shelves"
+        (let [resp (gr/shelves goodreads-client 1)]
+          (is (some #(= [:id ["138241012"]] ((juxt :tag :content) %)) (xml-seq (:body resp)))))))))
