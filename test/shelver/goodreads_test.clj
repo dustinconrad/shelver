@@ -26,4 +26,4 @@
            (is (some #(= [:id ["138241012"]] ((juxt :tag :content) %)) (xml-seq (:body resp))))))
         (testing "page 2"
           (let [resp (gr/shelves goodreads-client 2)]
-            (is (some #(= [:id ["138241012"]] ((juxt :tag :content) %)) (xml-seq (:body resp))))))))))
+            (is (nil? (some #(= [:id ["138241012"]] ((juxt :tag :content) %)) (xml-seq (:body resp)))))))))))
