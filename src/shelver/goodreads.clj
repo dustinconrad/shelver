@@ -33,10 +33,20 @@
   (shelves [this page]
     (let [url "https://www.goodreads.com/shelf/list.xml"
           request-method :GET
-          params {:key (:api-key oauth-client)
+          params {:key     (:api-key oauth-client)
                   :user_id user-id
-                  :page (or page 1)}]
+                  :page    (or page 1)}]
       (api-helper request-method url params))))
+
+;(defn get-shelf-by-name [goodreads-client shelf-name]
+;  (let [shelf-page-fn (fn [page-resp]
+;                        (->> (xml-seq (:body page-resp))
+;                             (some #(= :shelves (:tag %)))
+;                             (#((juxt :start :end :total) %))))]
+;    (loop [n 1]
+;      (let [resp (shelves goodreads-client n)
+;            [start end total] (shelf-page-fn resp)]
+;        ))))
 
 (defn new-goodreads-client [oauth-client access-token user-id]
   (let [goodreads-client (map->DefaultGoodreadsClient {:oauth-client oauth-client :access-token access-token :user-id user-id})]
