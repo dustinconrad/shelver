@@ -12,7 +12,8 @@
                  [ring/ring-defaults "0.1.4"]
                  [compojure "1.3.3"]
                  [clj-oauth "1.5.2"]
-                 [clj-http "1.1.0"]]
+                 [clj-http "1.1.0"]
+                 [com.github.kyleburton/clj-xpath "1.4.3"]]
   :plugins [[lein-gorilla "0.3.4"]
             [lein-environ "1.0.0"]]
   :main ^:skip-aot shelver.core

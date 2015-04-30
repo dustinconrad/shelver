@@ -2,7 +2,8 @@
   (:require [shelver.oauth :as oauth]
             [clj-http.client :as clj-http]
             [clojure.xml :as xml]
-            [shelver.util :refer :all]))
+            [shelver.util :refer :all]
+            [clj-xpath.core :refer :all]))
 
 (defprotocol GoodreadsClient
   (auth-user [this])
@@ -14,14 +15,14 @@
                      :GET clj-http/get)]
     (-> (request-fn url {:query-params credentials})
         (#(assoc % :raw-body (:body %)))
-        (update-in [:body] #(-> (.getBytes %) java.io.ByteArrayInputStream. xml/parse)))))
+        (update-in [:body] xml->doc))))
 
 (defn api-helper [request-method url params]
   (let [request-fn (case request-method
                      :GET clj-http/get)]
     (-> (request-fn url {:query-params params})
         (#(assoc % :raw-body (:body %)))
-        (update-in [:body] #(-> (.getBytes %) java.io.ByteArrayInputStream. xml/parse)))))
+        (update-in [:body] xml->doc))))
 
 (defrecord DefaultGoodreadsClient [oauth-client access-token user-id]
   GoodreadsClient
@@ -54,10 +55,7 @@
       goodreads-client
       (let [uid (->> (auth-user goodreads-client)
                      :body
-                     xml-seq
-                     (filter #(= :user (:tag %)))
-                     first
-                     :attrs
+                     ($x:attrs "/GoodreadsResponse/user")
                      :id
                      Long/parseLong)]
         (assoc goodreads-client :user-id uid)))))
