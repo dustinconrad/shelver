@@ -13,7 +13,8 @@
                  [compojure "1.3.3"]
                  [clj-oauth "1.5.2"]
                  [clj-http "1.1.0"]
-                 [com.github.kyleburton/clj-xpath "1.4.3"]]
+                 [org.clojure/data.xml "0.0.8"]
+                 [org.clojure/data.zip "0.1.1"]]
   :plugins [[lein-gorilla "0.3.4"]
             [lein-environ "1.0.0"]]
   :main ^:skip-aot shelver.core

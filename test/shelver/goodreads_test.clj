@@ -4,8 +4,9 @@
             [shelver.goodreads :as gr]
             [clojure.test :refer :all]
             [environ.core :refer [env]]
-            [clj-xpath.core :refer :all]
-            [shelver.util :refer :all]))
+            [shelver.util :refer :all]
+            [clojure.zip :as zip]
+            [clojure.data.zip.xml :as zx]))
 
 (defn default-oauth-client []
   (->> (oauth/map->DefaultOAuthClient {:api-key           (env :goodreads-api-key)
@@ -32,7 +33,13 @@
         ;  </user>
         ;</GoodreadsResponse>
         (let [resp (gr/auth-user goodreads-client)
-              name ($x:text "/GoodreadsResponse/user/name" (:body resp))]
+              name (-> resp
+                       :parsed
+                       zip/xml-zip
+                       (zx/xml1-> :user :name)
+                       zip/node
+                       :content
+                       first)]
           (is (= name "Conrad"))))
       (testing "list shelves"
         ;<GoodreadsResponse>
@@ -92,8 +99,25 @@
         (testing "page 1"
           (let [resp (gr/shelves goodreads-client 1)
                 id "138241012"
-                to-read ($x:text (str "//user_shelf/id[text() = " id "]/../name") (:body resp))]
-            (is (= to-read "to-read"))))
+                to-read (-> resp
+                            :parsed
+                            zip/xml-zip
+                            (zx/xml1-> :shelves :user_shelf [:id id]))]
+            (is (= (-> to-read zip/down zip/right zip/node :content first) "to-read"))))
+        ;<?xml version="1.0" encoding="UTF-8"?>
+        ;<GoodreadsResponse>
+        ;  <Request>
+        ;    <authentication>true</authentication>
+        ;    <key><![CDATA[EV7wnkrFg211dYRJNf8bg]]></key>
+        ;    <method><![CDATA[shelf_list]]></method>
+        ;  </Request>
+        ;  <shelves start="0" end="0" total="3">
+        ;  </shelves>
+        ;</GoodreadsResponse>
         (testing "page 2"
-          (let [resp (gr/shelves goodreads-client 2)]
-            (is (nil? (some #(= [:id ["138241012"]] ((juxt :tag :content) %)) (xml-seq (:body resp)))))))))))
+          (let [resp (gr/shelves goodreads-client 2)
+                shelves (-> resp
+                            :parsed
+                            zip/xml-zip
+                            (zx/xml-> :shelves :user_shelf))]
+            (is (some? shelves))))))))

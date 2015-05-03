@@ -1,9 +1,10 @@
 (ns shelver.goodreads
   (:require [shelver.oauth :as oauth]
             [clj-http.client :as clj-http]
-            [clojure.xml :as xml]
-            [shelver.util :refer :all]
-            [clj-xpath.core :refer :all]))
+            [clojure.zip :as zip]
+            [clojure.data.zip.xml :as zx]
+            [clojure.data.xml :as xml]
+            [shelver.util :refer :all]))
 
 (defprotocol GoodreadsClient
   (auth-user [this])
@@ -14,15 +15,13 @@
         request-fn (case request-method
                      :GET clj-http/get)]
     (-> (request-fn url {:query-params credentials})
-        (#(assoc % :raw-body (:body %)))
-        (update-in [:body] xml->doc))))
+        (#(assoc % :parsed (->> (:body %) java.io.StringReader. xml/parse))))))
 
 (defn api-helper [request-method url params]
   (let [request-fn (case request-method
                      :GET clj-http/get)]
     (-> (request-fn url {:query-params params})
-        (#(assoc % :raw-body (:body %)))
-        (update-in [:body] xml->doc))))
+        (#(assoc % :parsed (->> (:body %) java.io.StringReader. xml/parse))))))
 
 (defrecord DefaultGoodreadsClient [oauth-client access-token user-id]
   GoodreadsClient
@@ -40,22 +39,22 @@
       (api-helper request-method url params))))
 
 ;(defn get-shelf-by-name [goodreads-client shelf-name]
-;  (let [shelf-page-fn (fn [page-resp]
-;                        (->> (xml-seq (:body page-resp))
-;                             (some #(= :shelves (:tag %)))
-;                             (#((juxt :start :end :total) %))))]
-;    (loop [n 1]
-;      (let [resp (shelves goodreads-client n)
-;            [start end total] (shelf-page-fn resp)]
+;  (let [resp (shelves goodreads-client 1)
+;        {:keys [start end total]} ($x:attrs "//shelves" (:body resp))]
+;    (loop [page (:body resp)]
+;      (if-let [shelf ($x:node? "//user_shelf/name[text() = \"to-read\"]/.." page)]
+;        shelf
 ;        ))))
 
 (defn new-goodreads-client [oauth-client access-token user-id]
   (let [goodreads-client (map->DefaultGoodreadsClient {:oauth-client oauth-client :access-token access-token :user-id user-id})]
     (if user-id
       goodreads-client
-      (let [uid (->> (auth-user goodreads-client)
-                     :body
-                     ($x:attrs "/GoodreadsResponse/user")
-                     :id
-                     Long/parseLong)]
+      (let [uid (-> (auth-user goodreads-client)
+                    :parsed
+                    zip/xml-zip
+                    (zx/xml1-> :user)
+                    zip/node
+                    (get-in [:attrs :id])
+                    Long/parseLong)]
         (assoc goodreads-client :user-id uid)))))
