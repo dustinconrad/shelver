@@ -38,13 +38,26 @@
                   :page    (or page 1)}]
       (api-helper request-method url params))))
 
-;(defn get-shelf-by-name [goodreads-client shelf-name]
-;  (let [resp (shelves goodreads-client 1)
-;        {:keys [start end total]} ($x:attrs "//shelves" (:body resp))]
-;    (loop [page (:body resp)]
-;      (if-let [shelf ($x:node? "//user_shelf/name[text() = \"to-read\"]/.." page)]
-;        shelf
-;        ))))
+(defn get-shelf-by-name [goodreads-client shelf-name]
+  (let [by-name #(-> %
+                     :parsed
+                     zip/xml-zip
+                     (zx/xml1-> :shelves :user_shelf [:name shelf-name])
+                     zip/node)
+        info #(-> %
+                  :parsed
+                  zip/xml-zip
+                  (zx/xml-> :shelves)
+                  zip/node
+                  :attrs)]
+    (loop [page-num 1]
+      (let [resp (shelves goodreads-client page-num)]
+        (if-let [shelf (by-name resp)]
+          shelf
+          (let [{:keys [start end total]} (info resp)]
+            (if (or (= end total) (= 0 start end))
+              nil
+              (recur (shelves goodreads-client (inc page-num))))))))))
 
 (defn new-goodreads-client [oauth-client access-token user-id]
   (let [goodreads-client (map->DefaultGoodreadsClient {:oauth-client oauth-client :access-token access-token :user-id user-id})]

@@ -120,4 +120,13 @@
                             :parsed
                             zip/xml-zip
                             (zx/xml-> :shelves :user_shelf))]
-            (is (some? shelves))))))))
+            (is (empty? shelves))))
+        (testing "find by shelf name"
+          (let [name "to-read"
+                expected-id "138241012"
+                shelf (gr/get-shelf-by-name goodreads-client name)]
+            (is (= expected-id (-> shelf zip/xml-zip zip/down zip/node :content first))))
+          (let [name "currently-reading"
+                expected-id "138241013"
+                shelf (gr/get-shelf-by-name goodreads-client name)]
+            (is (= expected-id (-> shelf zip/xml-zip zip/down zip/node :content first)))))))))
