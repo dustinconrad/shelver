@@ -21,7 +21,8 @@
   (let [credentials (oauth/credentials oauth-client access-token request-method url params)
         request-fn (case request-method
                      :GET clj-http/get)]
-    (-> (request-fn url {:query-params credentials})
+    (api-helper request-method url credentials)
+    #_(-> (request-fn url {:query-params credentials})
         (#(assoc % :parsed (->> (:body %) java.io.StringReader. xml/parse))))))
 
 (defn shelf-name [shelf]

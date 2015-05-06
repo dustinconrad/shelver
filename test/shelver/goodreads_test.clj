@@ -131,7 +131,7 @@
                 expected-id "138241013"
                 shelf (gr/get-shelf-by-name goodreads-client name)]
             (is (= expected-id (-> shelf zip/xml-zip zip/down zip/node :content first)))))
-        #_(testing "get books on shelf"
-          (let [resp (gr/get-shelf-books goodreads-client "to-read")]
-            (println resp)))
+        ;(testing "get books on shelf"
+        ;  (let [resp (gr/get-shelf-books goodreads-client "to-read")]
+        ;    (println resp)))
         ))))
