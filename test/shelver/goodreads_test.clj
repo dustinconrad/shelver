@@ -32,7 +32,7 @@
         ;    <link><![CDATA[https://www.goodreads.com/user/show/42456052-conrad?utm_medium=api]]></link>
         ;  </user>
         ;</GoodreadsResponse>
-        (let [resp (gr/auth-user goodreads-client)
+        (let [resp (gr/get-auth-user goodreads-client)
               name (-> resp
                        :parsed
                        zip/xml-zip
@@ -97,13 +97,14 @@
         ;  </shelves>
         ;</GoodreadsResponse>
         (testing "page 1"
-          (let [resp (gr/shelves goodreads-client 1)
+          (let [resp (gr/get-shelves goodreads-client 1)
                 id "138241012"
                 to-read (-> resp
                             :parsed
                             zip/xml-zip
-                            (zx/xml1-> :shelves :user_shelf [:id id]))]
-            (is (= (-> to-read zip/down zip/right zip/node :content first) "to-read"))))
+                            (zx/xml1-> :shelves :user_shelf [:id id]))
+                name (gr/shelf-name (zip/node to-read))]
+            (is (= name "to-read"))))
         ;<?xml version="1.0" encoding="UTF-8"?>
         ;<GoodreadsResponse>
         ;  <Request>
@@ -115,7 +116,7 @@
         ;  </shelves>
         ;</GoodreadsResponse>
         (testing "page 2"
-          (let [resp (gr/shelves goodreads-client 2)
+          (let [resp (gr/get-shelves goodreads-client 2)
                 shelves (-> resp
                             :parsed
                             zip/xml-zip
@@ -129,4 +130,8 @@
           (let [name "currently-reading"
                 expected-id "138241013"
                 shelf (gr/get-shelf-by-name goodreads-client name)]
-            (is (= expected-id (-> shelf zip/xml-zip zip/down zip/node :content first)))))))))
+            (is (= expected-id (-> shelf zip/xml-zip zip/down zip/node :content first)))))
+        #_(testing "get books on shelf"
+          (let [resp (gr/get-shelf-books goodreads-client "to-read")]
+            (println resp)))
+        ))))
