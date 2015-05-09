@@ -14,12 +14,14 @@
 (defn- api-helper [request-method url params]
   (let [request-fn (case request-method
                      :GET clj-http/get)]
-    (-> (request-fn url {:query-params params})
+    (-> (request-fn url {:query-params params
+                         :throw-entire-message? true})
         (#(assoc % :parsed (->> (:body %) java.io.StringReader. xml/parse))))))
 
 (defn- oauth-api-helper [oauth-client access-token request-method url params]
-  (let [credentials (oauth/credentials oauth-client access-token request-method url params)]
-    (api-helper request-method url credentials)))
+  (let [credentials (oauth/credentials oauth-client access-token request-method url params)
+        combined (merge credentials params)]
+    (api-helper request-method url combined)))
 
 (defn shelf-name [shelf]
   (-> shelf
@@ -50,7 +52,7 @@
                   :id    user-id
                   :shelf shelf-name
                   :key   (:api-key oauth-client)}]
-      (api-helper request-method url params))))
+      (oauth-api-helper oauth-client access-token request-method url params))))
 
 (defn get-shelf-by-name [goodreads-client shelf-name]
   (let [by-name #(-> %

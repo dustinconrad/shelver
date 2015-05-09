@@ -130,8 +130,7 @@
           (let [name "currently-reading"
                 expected-id "138241013"
                 shelf (gr/get-shelf-by-name goodreads-client name)]
-            (is (= expected-id (-> shelf zip/xml-zip zip/down zip/node :content first)))))
-        (testing "get books on shelf")))))
+            (is (= expected-id (-> shelf zip/xml-zip zip/down zip/node :content first)))))))))
 
 (deftest test-get-shelf-books
   (testing "testing get shelf books"
