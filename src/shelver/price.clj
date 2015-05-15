@@ -1,7 +1,6 @@
 (ns shelver.price
   (:require [clojure.zip :as zip]
             [clojure.data.zip.xml :as zx]
-            [clojure.data.xml :as xml]
             [shelver.util :refer :all]))
 
 (defrecord BookInfo [isbn isbn13 title authors])
@@ -16,7 +15,8 @@
                          (vector :authors))]
     (->> (zip/xml-zip xml-book)
          ((apply juxt authors-fn field-fns))
-         (into {}))))
+         (into {})
+         map->BookInfo)))
 
 (defprotocol PriceClient
   (get-price [this book-info]))
