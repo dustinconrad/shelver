@@ -27,9 +27,7 @@
   (-> shelf
       zip/xml-zip
       (zx/xml1-> :name)
-      zip/node
-      :content
-      first))
+      zx/text))
 
 (defrecord DefaultGoodreadsClient [oauth-client access-token user-id]
   GoodreadsClient
@@ -83,7 +81,6 @@
                     :parsed
                     zip/xml-zip
                     (zx/xml1-> :user)
-                    zip/node
-                    (get-in [:attrs :id])
+                    (zx/attr :id)
                     Long/parseLong)]
         (assoc goodreads-client :user-id uid)))))

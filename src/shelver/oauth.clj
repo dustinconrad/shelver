@@ -2,9 +2,6 @@
   (:require [oauth.client :as oauth]
             [com.stuartsierra.component :as component]))
 
-;key: EV7wnkrFg211dYRJNf8bg
-;secret: wNW0K3qUnjHlcbaO6ur0R7ia1TKddiRnoLrx8vLxY
-
 (defprotocol OAuthClient
   (request-token [this callback-url])
   (user-approval-uri [this request-token])

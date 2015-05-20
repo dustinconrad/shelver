@@ -37,9 +37,7 @@
                        :parsed
                        zip/xml-zip
                        (zx/xml1-> :user :name)
-                       zip/node
-                       :content
-                       first)]
+                       zx/text)]
           (is (= name "Conrad"))))
       (testing "list shelves"
         ;<GoodreadsResponse>
@@ -126,11 +124,11 @@
           (let [name "to-read"
                 expected-id "138241012"
                 shelf (gr/get-shelf-by-name goodreads-client name)]
-            (is (= expected-id (-> shelf zip/xml-zip zip/down zip/node :content first))))
+            (is (= expected-id (-> shelf zip/xml-zip (zx/xml1-> :id) zx/text))))
           (let [name "currently-reading"
                 expected-id "138241013"
                 shelf (gr/get-shelf-by-name goodreads-client name)]
-            (is (= expected-id (-> shelf zip/xml-zip zip/down zip/node :content first)))))))))
+            (is (= expected-id (-> shelf zip/xml-zip (zx/xml1-> :id) zx/text)))))))))
 
 (deftest test-get-shelf-books
   ;<?xml version="1.0" encoding="UTF-8"?>
@@ -210,4 +208,4 @@
                        :parsed
                        zip/xml-zip
                        (zx/xml1-> :reviews :review :book [:title expected]))]
-          (is (= expected-id (-> book zip/down zip/node :content first))))))))
+          (is (= expected-id (-> book (zx/xml1-> :id) zx/text))))))))
