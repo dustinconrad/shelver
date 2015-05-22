@@ -34,7 +34,6 @@
         ;</GoodreadsResponse>
         (let [resp (gr/get-auth-user goodreads-client)
               name (-> resp
-                       :parsed
                        zip/xml-zip
                        (zx/xml1-> :user :name)
                        zx/text)]
@@ -98,7 +97,6 @@
           (let [resp (gr/get-shelves goodreads-client 1)
                 id "138241012"
                 to-read (-> resp
-                            :parsed
                             zip/xml-zip
                             (zx/xml1-> :shelves :user_shelf [:id id]))
                 name (gr/shelf-name (zip/node to-read))]
@@ -116,7 +114,6 @@
         (testing "page 2"
           (let [resp (gr/get-shelves goodreads-client 2)
                 shelves (-> resp
-                            :parsed
                             zip/xml-zip
                             (zx/xml-> :shelves :user_shelf))]
             (is (empty? shelves))))
@@ -205,7 +202,6 @@
               expected "Clojure in Small Pieces"
               expected-id "10281630"
               book (-> resp
-                       :parsed
                        zip/xml-zip
                        (zx/xml1-> :reviews :review :book [:title expected]))]
           (is (= expected-id (-> book (zx/xml1-> :id) zx/text))))))))

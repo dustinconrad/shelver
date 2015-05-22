@@ -13,4 +13,4 @@
       (testing "get price"
         (let [book (price/->BookInfo nil nil "Judas Unchained" #{"Peter F. Hamilton"})
               response (price/get-price gb-price-client book)]
-          (println response))))))
+          (prn response))))))
