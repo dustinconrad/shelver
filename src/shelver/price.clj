@@ -5,6 +5,8 @@
 
 (defrecord BookInfo [isbn isbn13 title authors])
 
+(defrecord PriceInfo [amount currency isbn13 buy-link])
+
 (defn xml->book-info [xml-book]
   (let [create-field-fn (fn [part]
                      #(vector part (-> % (zx/xml1-> part) zx/text)))

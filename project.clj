@@ -13,14 +13,18 @@
                  [compojure "1.3.3"]
                  [clj-oauth "1.5.2"]
                  [clj-http "1.1.0"]
+                 [com.datomic/datomic-free "0.9.5173" :exclusions [joda-time]]
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/data.zip "0.1.1"]]
   :plugins [[lein-gorilla "0.3.4"]
             [lein-environ "1.0.0"]]
   :main ^:skip-aot shelver.core
   :target-path "target/%s"
-  :profiles {:dev     {:source-paths ["dev"]
-                       :env          {:http-port 3000}}
+  :profiles {:dev     [{:source-paths ["dev"]
+                        :env          {:http-port 3000}}
+                       :goodreads-api
+                       :google-api]
+             :test    [:goodreads-api :google-api :goodreads-test]
              :prod    {:env          {:http-port 8000
                                       :repl-port 8001}
                        :dependencies [[org.clojure/tools.nrepl "0.2.5"]]}
