@@ -20,8 +20,15 @@
             [lein-environ "1.0.0"]]
   :main ^:skip-aot shelver.core
   :target-path "target/%s"
-  :profiles {:dev     [{:source-paths ["dev"]
-                        :env          {:http-port 3000}}
+  :profiles {:goodreads-api {:env {:goodreads-api-key "your-goodreads-key"
+                                   :goodreads-api-secret "your-goodreads-secret"}}
+             :google-api {:env {:google-api-key "your-google-key"}}
+             :goodreads-test {:env {:goodreads-access-token {:oauth_token "oauth-test-token"
+                                                             :oauth_token_secret "oauth-test-token-secret"}}}
+
+             :dev     [{:source-paths ["dev"]
+                        :env          {:http-port 3000
+                                       :enlive-reload true}}
                        :goodreads-api
                        :google-api]
              :test    [:goodreads-api :google-api :goodreads-test]

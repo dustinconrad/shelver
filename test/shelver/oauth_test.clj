@@ -5,13 +5,9 @@
             [environ.core :refer [env]]))
 
 (defn default-oauth-client []
-  (->> (oauth/map->DefaultOAuthClient {:api-key           (env :goodreads-api-key)
-                                       :api-secret        (env :goodreads-api-secret)
-                                       :request-token-url "https://www.goodreads.com/oauth/request_token"
-                                       :access-token-url  "https://www.goodreads.com/oauth/access_token"
-                                       :authorize-url     "https://www.goodreads.com/oauth/authorize"
-                                       :signature-method  :hmac-sha1})
-       component/start))
+  (->>
+    (oauth/new-oauth-client (env :goodreads-api-key) (env :goodreads-api-secret))
+    component/start))
 
 (deftest test-oauth-wrapper
   (testing "Testing oauth client"

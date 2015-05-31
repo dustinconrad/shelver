@@ -1,6 +1,11 @@
 (ns shelver.html
   (:require [net.cgrand.enlive-html :as html]
+            [environ.core :refer [env]]
+            [net.cgrand.reload :as reload]
             [shelver.util :as util]))
+
+(when (env :enlive-reload)
+  (net.cgrand.reload/auto-reload *ns*))
 
 (def navigation-items
   [["Home" "/"]
@@ -20,10 +25,10 @@
                   [:body :div.navbar] (html/substitute (nav uri)))
 
 (defn index [request]
-  (base request {:title "shelver"}))
+  (apply str (base request {:title "shelver"})))
 
 (defn about [request]
-  (base request {:title "shelver - about"}))
+  (apply str (base request {:title "shelver - about"})))
 
 (defn contacts [request]
-  (base request {:title "shelver - contacts"}))
+  (apply str (base request {:title "shelver - contacts"})))
