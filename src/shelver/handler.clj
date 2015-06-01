@@ -6,7 +6,8 @@
 (defroutes routes
            (GET "/" request (html/index request))
            (GET "/about" request (html/about request))
-           (GET "/contact" request (html/contacts request)))
+           (GET "/contact" request (html/contacts request))
+           (GET "/sign-up" request (html/sign-up request)))
 
 (def app
   (-> routes

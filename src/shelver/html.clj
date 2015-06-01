@@ -1,24 +1,27 @@
 (ns shelver.html
   (:require [net.cgrand.enlive-html :as html]
             [environ.core :refer [env]]
-            [net.cgrand.reload :as reload]
             [shelver.util :as util]))
-
-(when (env :enlive-reload)
-  (net.cgrand.reload/auto-reload *ns*))
 
 (def navigation-items
   [["Home" "/"]
    ["About" "/about"]
    ["Contact" "/contact"]])
 
+(def sign-up-items
+  [["Sign Up" "/sign-up"]])
+
+(defn- replace-nav-item [current-path nav-items]
+  (html/clone-for [[caption url] nav-items]
+                  [:li] (if (= current-path url)
+                          (html/set-attr :class "active")
+                          identity)
+                  [:li :a] (html/content caption)
+                  [:li :a] (html/set-attr :href url)))
+
 (html/defsnippet nav "templates/nav.html" [:body :div#nav] [current-path]
-                 [:ul.nav [:li html/first-of-type]] (html/clone-for [[caption url] navigation-items]
-                                                                    [:li] (if (= current-path url)
-                                                                            (html/set-attr :class "active")
-                                                                            identity)
-                                                                    [:li :a] (html/content caption)
-                                                                    [:li :a] (html/set-attr :href url)))
+                 [[:ul.nav (html/but :.navbar-right)] [:li html/first-of-type]] (replace-nav-item current-path navigation-items)
+                 [:ul.nav.navbar-right [:li html/first-of-type]] (replace-nav-item current-path sign-up-items))
 
 (html/deftemplate base "templates/base.html" [{:keys [uri] :as req} {:keys [title] :as props}]
                   [:head :title] (html/content title)
@@ -28,7 +31,10 @@
   (apply str (base request {:title "shelver"})))
 
 (defn about [request]
-  (apply str (base request {:title "shelver - about"})))
+  (apply str (base request {:title "shelver - About"})))
 
 (defn contacts [request]
-  (apply str (base request {:title "shelver - contacts"})))
+  (apply str (base request {:title "shelver - Contacts"})))
+
+(defn sign-up [request]
+  (apply str (base request {:title "shelver - Sign Up"})))
