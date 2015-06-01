@@ -23,9 +23,11 @@
                  [[:ul.nav (html/but :.navbar-right)] [:li html/first-of-type]] (replace-nav-item current-path navigation-items)
                  [:ul.nav.navbar-right [:li html/first-of-type]] (replace-nav-item current-path sign-up-items))
 
-(html/deftemplate base "templates/base.html" [{:keys [uri] :as req} {:keys [title] :as props}]
+(html/deftemplate base "templates/base.html" [{:keys [uri] :as req} {:keys [title main] :as props}]
                   [:head :title] (html/content title)
-                  [:body :div.navbar] (html/substitute (nav uri)))
+                  [:body :div.navbar] (html/substitute (nav uri))
+                  )
+
 
 (defn index [request]
   (apply str (base request {:title "shelver"})))
