@@ -11,6 +11,14 @@
 (def sign-up-items
   [["Sign Up" "/sign-up"]])
 
+(defmacro maybe-substitute
+  ([expr] `(if-let [x# ~expr] (html/substitute x#) identity))
+  ([expr & exprs] `(maybe-substitute (or ~expr ~@exprs))))
+
+(defmacro maybe-content
+  ([expr] `(if-let [x# ~expr] (html/content x#) identity))
+  ([expr & exprs] `(maybe-content (or ~expr ~@exprs))))
+
 (defn- replace-nav-item [current-path nav-items]
   (html/clone-for [[caption url] nav-items]
                   [:li] (if (= current-path url)
@@ -23,11 +31,13 @@
                  [[:ul.nav (html/but :.navbar-right)] [:li html/first-of-type]] (replace-nav-item current-path navigation-items)
                  [:ul.nav.navbar-right [:li html/first-of-type]] (replace-nav-item current-path sign-up-items))
 
+(html/defsnippet credentials "templates/credentials.html" [:body] []
+                 )
+
 (html/deftemplate base "templates/base.html" [{:keys [uri] :as req} {:keys [title main] :as props}]
                   [:head :title] (html/content title)
                   [:body :#nav] (html/substitute (nav uri))
-                  ;[:body :#main] (or )
-                  )
+                  [:body :#main] (maybe-substitute main))
 
 (defn index [request]
   (apply str (base request {:title "shelver"})))
