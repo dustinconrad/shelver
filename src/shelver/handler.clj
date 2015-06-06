@@ -1,14 +1,25 @@
 (ns shelver.handler
-  (:require [compojure.core :refer [defroutes GET]]
-            [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
-            [shelver.html :as html]))
+  (:require [compojure.core :refer [defroutes GET POST context routes]]
+            [ring.middleware.defaults :refer [wrap-defaults site-defaults api-defaults]]
+            [shelver.html :as html]
+            [shelver.api :as api]))
 
-(defroutes routes
+(defroutes page-routes
            (GET "/" request (html/index request))
            (GET "/about" request (html/about request))
            (GET "/contact" request (html/contacts request))
            (GET "/sign-up" request (html/sign-up request)))
 
+(defroutes api-routes
+           (context "/api" []
+             (GET "/sign-up" request (api/sign-up "email" "pass" "confirm"))))
+
+(defn configure-routes []
+  (let [api (-> api-routes
+                (wrap-defaults api-defaults))
+        page (-> page-routes
+                 (wrap-defaults site-defaults))]
+    (routes api page)))
+
 (def app
-  (-> routes
-      (wrap-defaults site-defaults)))
+  (configure-routes))

@@ -31,8 +31,7 @@
                  [[:ul.nav (html/but :.navbar-right)] [:li html/first-of-type]] (replace-nav-item current-path navigation-items)
                  [:ul.nav.navbar-right [:li html/first-of-type]] (replace-nav-item current-path sign-up-items))
 
-(html/defsnippet credentials "templates/credentials.html" [:body] []
-                 )
+(html/defsnippet credentials "templates/credentials.html" [:body :#credentials-box] [])
 
 (html/deftemplate base "templates/base.html" [{:keys [uri] :as req} {:keys [title main] :as props}]
                   [:head :title] (html/content title)
@@ -49,4 +48,5 @@
   (apply str (base request {:title "shelver - Contacts"})))
 
 (defn sign-up [request]
-  (apply str (base request {:title "shelver - Sign Up"})))
+  (apply str (base request {:title "shelver - Sign Up"
+                            :main (credentials)})))
