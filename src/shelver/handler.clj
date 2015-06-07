@@ -8,11 +8,12 @@
            (GET "/" request (html/index request))
            (GET "/about" request (html/about request))
            (GET "/contact" request (html/contacts request))
-           (GET "/sign-up" request (html/sign-up request)))
+           (GET "/sign-up" request (html/sign-up "register" request))
+           (POST "/register" request (html/register request)))
 
 (defroutes api-routes
            (context "/api" []
-             (GET "/sign-up" request (api/sign-up "email" "pass" "confirm"))))
+             (GET "/register" request (api/sign-up "email" "pass" "confirm"))))
 
 (defn configure-routes []
   (let [api (-> api-routes
@@ -22,4 +23,5 @@
     (routes api page)))
 
 (def app
-  (configure-routes))
+  (-> page-routes
+      (wrap-defaults site-defaults)))

@@ -1,7 +1,8 @@
 (ns shelver.html
   (:require [net.cgrand.enlive-html :as html]
             [environ.core :refer [env]]
-            [shelver.util :as util]))
+            [shelver.util :as util]
+            [ring.util.anti-forgery :as csrf]))
 
 (def navigation-items
   [["Home" "/"]
@@ -31,7 +32,10 @@
                  [[:ul.nav (html/but :.navbar-right)] [:li html/first-of-type]] (replace-nav-item current-path navigation-items)
                  [:ul.nav.navbar-right [:li html/first-of-type]] (replace-nav-item current-path sign-up-items))
 
-(html/defsnippet credentials "templates/credentials.html" [:body :#credentials-box] [])
+(html/defsnippet credentials "templates/credentials.html" [:body :#credentials-box] [register-endpoint]
+                 [:#signup-form] (html/set-attr :method "POST"
+                                                :action register-endpoint)
+                 [:#csrf] (html/html-content (csrf/anti-forgery-field)))
 
 (html/deftemplate base "templates/base.html" [{:keys [uri] :as req} {:keys [title main] :as props}]
                   [:head :title] (html/content title)
@@ -47,6 +51,9 @@
 (defn contacts [request]
   (apply str (base request {:title "shelver - Contacts"})))
 
-(defn sign-up [request]
+(defn sign-up [register-endpoint request]
   (apply str (base request {:title "shelver - Sign Up"
-                            :main (credentials)})))
+                            :main (credentials register-endpoint)})))
+
+(defn register [request]
+  "<html>test</html>")
