@@ -15,13 +15,6 @@
            (context "/api" []
              (GET "/register" request (api/sign-up "email" "pass" "confirm"))))
 
-(defn configure-routes []
-  (let [api (-> api-routes
-                (wrap-defaults api-defaults))
-        page (-> page-routes
-                 (wrap-defaults site-defaults))]
-    (routes api page)))
-
 (def app
-  (-> page-routes
-      (wrap-defaults site-defaults)))
+  (-> (routes api-routes (wrap-defaults page-routes site-defaults))
+      (wrap-defaults api-defaults)))
