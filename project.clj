@@ -4,8 +4,11 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
+  :repositories {"my.datomic.com" {:url "https://my.datomic.com/repo"
+                                   :creds :gpg}}
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.danielsz/system "0.1.6"]
+                 [com.stuartsierra/component "0.2.3"]
+                 [reloaded.repl "0.1.0"]
                  [environ "1.0.0"]
                  [ring "1.3.2"]
                  [enlive "1.1.5"]
@@ -13,9 +16,10 @@
                  [compojure "1.3.3"]
                  [clj-oauth "1.5.2"]
                  [clj-http "1.1.0"]
-                 [com.datomic/datomic-free "0.9.5173" :exclusions [joda-time]]
                  [org.clojure/data.xml "0.0.8"]
-                 [org.clojure/data.zip "0.1.1"]]
+                 [org.clojure/data.zip "0.1.1"]
+                 [com.datomic/datomic-pro "0.9.5173"]
+                 [io.rkn/conformity "0.3.4" :exclusions [com.datomic/datomic-free]]]
   :plugins [[lein-gorilla "0.3.4"]
             [lein-environ "1.0.0"]]
   :main ^:skip-aot shelver.core
@@ -28,7 +32,7 @@
 
              :dev     [{:source-paths ["dev"]
                         :env          {:http-port 3000
-                                       :enlive-reload true}}
+                                       :datomic-uri "datomic:dev://datomic-db:4334/shelver"}}
                        :goodreads-api
                        :google-api]
              :test    [:goodreads-api :google-api :goodreads-test]

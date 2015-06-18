@@ -1,0 +1,23 @@
+{:shelver/user-schema
+ {:txes [[{:db/id #db/id [:db.part/db]
+           :db/ident :user/email
+           :db/valueType :db.type/string
+           :db/cardinality :db.cardinality/one
+           :db/unique :db.unique/value
+           :db/doc "A user's email"
+           :db.install/_attribute :db.part/db}
+
+          {:db/id #db/id [:db.part/db]
+           :db/ident :user/password-hash
+           :db/valueType :db.type/string
+           :db/cardinality :db.cardinality/one
+           :db/doc "A user's password hash"
+           :db.install/_attribute :db.part/db}
+
+          {:db/id #db/id [:db.part/db]
+           :db/ident :user/password-salt
+           :db/valueType :db.type/string
+           :db/cardinality :db.cardinality/one
+           :db/doc "A user's password salt"
+           :db.install/_attribute :db.part/db}
+          ]]}}
