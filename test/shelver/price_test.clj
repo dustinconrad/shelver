@@ -1,7 +1,6 @@
 (ns shelver.price-test
   (:require [shelver.price :as p]
             [clojure.test :refer :all]
-            [clojure.zip :as zip]
             [clojure.data.xml :as xml]))
 
 (deftest test-xml->book-info

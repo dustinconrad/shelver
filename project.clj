@@ -24,19 +24,23 @@
             [lein-environ "1.0.0"]]
   :main ^:skip-aot shelver.core
   :target-path "target/%s"
-  :profiles {:goodreads-api {:env {:goodreads-api-key "your-goodreads-key"
-                                   :goodreads-api-secret "your-goodreads-secret"}}
-             :google-api {:env {:google-api-key "your-google-key"}}
-             :goodreads-test {:env {:goodreads-access-token {:oauth_token "oauth-test-token"
+  :profiles {:goodreads-api  {:env {:goodreads-api-key    "your-goodreads-key"
+                                    :goodreads-api-secret "your-goodreads-secret"}}
+             :google-api     {:env {:google-api-key "your-google-key"}}
+             :goodreads-test {:env {:goodreads-access-token {:oauth_token        "oauth-test-token"
                                                              :oauth_token_secret "oauth-test-token-secret"}}}
+             :crypto-client  {:env {:iterations  "number"
+                                    :target-size "bytes"
+                                    :salt-size   "bytes"}}
 
-             :dev     [{:source-paths ["dev"]
-                        :env          {:http-port 3000
-                                       :datomic-uri "datomic:dev://datomic-db:4334/shelver"}}
-                       :goodreads-api
-                       :google-api]
-             :test    [:goodreads-api :google-api :goodreads-test]
-             :prod    {:env          {:http-port 8000
-                                      :repl-port 8001}
-                       :dependencies [[org.clojure/tools.nrepl "0.2.5"]]}
-             :uberjar {:aot :all}})
+             :dev            [{:source-paths ["dev"]
+                               :env          {:http-port   3000
+                                              :datomic-uri "datomic:dev://datomic-db:4334/shelver"}}
+                              :goodreads-api
+                              :google-api
+                              :crypto-client]
+             :test           [:goodreads-api :google-api :goodreads-test]
+             :prod           {:env          {:http-port 8000
+                                             :repl-port 8001}
+                              :dependencies [[org.clojure/tools.nrepl "0.2.5"]]}
+             :uberjar        {:aot :all}})

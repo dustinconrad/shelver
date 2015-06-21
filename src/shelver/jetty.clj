@@ -5,7 +5,8 @@
 (defrecord WebServer [port server handler]
   component/Lifecycle
   (start [component]
-    (let [server (run-jetty handler {:port port :join? false})]
+    (let [deps (dissoc component port server handler)
+          server (run-jetty (handler deps) {:port port :join? false})]
       (println component)
       (assoc component :server server)))
   (stop [component]
@@ -13,6 +14,5 @@
       (.stop server)
       component)))
 
-(defn new-web-server
-  [port handler]
+(defn new-web-server [port handler]
   (map->WebServer {:port port :handler handler}))

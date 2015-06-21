@@ -4,17 +4,19 @@
             [shelver.html :as html]
             [shelver.api :as api]))
 
-(defroutes page-routes
-           (GET "/" request (html/index request))
-           (GET "/about" request (html/about request))
-           (GET "/contact" request (html/contacts request))
-           (GET "/sign-up" request (html/sign-up "register" request))
-           (POST "/register" request (html/register request)))
+(defn page-routes [{:keys [datomic-db] :as deps}]
+  (routes
+    (GET "/" request (html/index request))
+    (GET "/about" request (html/about request))
+    (GET "/contact" request (html/contacts request))
+    (GET "/sign-up" request (html/sign-up "register" request))
+    (POST "/register" request (html/register request))))
 
-(defroutes api-routes
-           (context "/api" []
-             (GET "/register" request (api/sign-up "email" "pass" "confirm"))))
+(defn api-routes [{:keys [datomic-db] :as deps}]
+  (routes
+    (context "/api" []
+     (GET "/register" request (api/sign-up "email" "pass" "confirm")))))
 
-(def app
-  (-> (routes api-routes (wrap-defaults page-routes site-defaults))
+(defn app [deps]
+  (-> (routes (api-routes deps) (wrap-defaults (page-routes deps) site-defaults))
       (wrap-defaults api-defaults)))
