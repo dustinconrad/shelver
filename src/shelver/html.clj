@@ -2,6 +2,7 @@
   (:require [net.cgrand.enlive-html :as html]
             [environ.core :refer [env]]
             [shelver.util :as util]
+            [shelver.user :as user]
             [ring.util.anti-forgery :as csrf]))
 
 (def navigation-items
@@ -55,5 +56,6 @@
   (apply str (base request {:title "shelver - Sign Up"
                             :main (credentials register-endpoint)})))
 
-(defn register [request]
+(defn register [datomic-db crypto-client request]
+  (user/create-user datomic-db crypto-client (:params request))
   "<html>test</html>")

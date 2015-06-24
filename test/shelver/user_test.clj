@@ -8,7 +8,7 @@
 
 (deftest test-create-user
   (testing "testing create and find a user"
-    (let [datomic-db (-> (new-datomic-db "datomic:mem://shelver" "migrations/schema.edn")
+    (let [datomic-db (-> (new-datomic-db (or "datomic:dev://datomic-db:4334/shelver" "datomic:mem://shelver") "migrations/schema.edn")
                          component/start)
           crypto-client (crypto/->DefaultCryptoClient 4321 64 32)
           email (-> (java.util.UUID/randomUUID)
