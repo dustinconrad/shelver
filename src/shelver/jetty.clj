@@ -7,7 +7,6 @@
   (start [component]
     (let [deps (dissoc component port server handler)
           server (run-jetty (handler deps) {:port port :join? false})]
-      (println component)
       (assoc component :server server)))
   (stop [component]
     (when server

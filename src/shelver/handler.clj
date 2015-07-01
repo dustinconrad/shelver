@@ -1,8 +1,17 @@
 (ns shelver.handler
-  (:require [compojure.core :refer [defroutes GET POST context routes]]
+  (:require [taoensso.timbre :as timbre]
+            [taoensso.timbre.appenders.core :as appenders]
+            [compojure.core :refer [defroutes GET POST context routes]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults api-defaults]]
             [shelver.html :as html]
             [shelver.api :as api]))
+
+(defn wrap-log-request [handler]
+  (fn [req]
+    (timbre/with-merged-config
+      {:appenders {:request (appenders/spit-appender {:fname "request.log"})}}
+      (timbre/info req))
+    (handler req)))
 
 (defn page-routes [{:keys [datomic-db crypto-client] :as deps}]
   (routes
@@ -15,8 +24,14 @@
 (defn api-routes [{:keys [datomic-db] :as deps}]
   (routes
     (context "/api" []
-     (GET "/register" request (api/sign-up "email" "pass" "confirm")))))
+      (GET "/register" request (api/sign-up "email" "pass" "confirm")))))
 
 (defn app [deps]
-  (-> (routes (api-routes deps) (wrap-defaults (page-routes deps) site-defaults))
-      (wrap-defaults api-defaults)))
+  (let [apis (-> (api-routes deps)
+                 wrap-log-request)
+        pages (-> (page-routes deps)
+                  wrap-log-request
+                  (wrap-defaults site-defaults))]
+
+    (-> (routes apis pages)
+        (wrap-defaults api-defaults))))

@@ -11,3 +11,4 @@ pom.xml.asc
 .gorilla-port
 .lein-env
 profiles.clj
+*.log

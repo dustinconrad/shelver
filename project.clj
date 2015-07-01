@@ -13,6 +13,7 @@
                  [ring "1.3.2"]
                  [enlive "1.1.5"]
                  [ring/ring-defaults "0.1.4"]
+                 [com.taoensso/timbre "4.0.2"]
                  [compojure "1.3.3"]
                  [clj-oauth "1.5.2"]
                  [clj-http "1.1.0"]
