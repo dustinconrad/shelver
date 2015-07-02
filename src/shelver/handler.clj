@@ -9,7 +9,8 @@
 (defn wrap-log-request [handler]
   (fn [req]
     (timbre/with-merged-config
-      {:appenders {:request (appenders/spit-appender {:fname "request.log"})}}
+      {:appenders {:request (appenders/spit-appender {:fname "request.log"})
+                   :println {:enabled? false}}}
       (timbre/info req))
     (handler req)))
 
