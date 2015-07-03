@@ -56,6 +56,6 @@
   (apply str (base request {:title "shelver - Sign Up"
                             :main (credentials register-endpoint)})))
 
-(defn register [datomic-db crypto-client request]
-  (user/create-user datomic-db crypto-client (:params request))
+(defn register [datomic crypto-client request]
+  (user/create-user datomic crypto-client (:params request))
   "<html>test</html>")

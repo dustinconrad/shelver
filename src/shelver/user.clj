@@ -2,10 +2,10 @@
   (:require [datomic.api :as d :refer [db q]]
             [shelver.crypto :as crypto]))
 
-(defn create-user [datomic-db crypto-client {:keys [email password]}]
+(defn create-user [datomic-conn crypto-client {:keys [email password]}]
   (let [[hash salt] (crypto/encrypt-password crypto-client password)]
     (d/transact
-      (:conn datomic-db)
+      datomic-conn
       [{:db/id              #db/id[:db.part/user]
         :user/email         email
         :user/password-hash hash
@@ -16,6 +16,6 @@
            :in $ ?email
            :where
            [?u :user/email ?email]]
-         (db (:conn datomic-db))
+         datomic-db
          email)
       ffirst))

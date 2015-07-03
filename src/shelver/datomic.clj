@@ -14,5 +14,5 @@
   (stop [component]
     (assoc component :conn nil)))
 
-(defn new-datomic-db [uri schema]
+(defn new-datomic [uri schema]
   (map->Datomic {:uri uri :schema schema}))

@@ -14,15 +14,15 @@
       (timbre/info req))
     (handler req)))
 
-(defn page-routes [{:keys [datomic-db crypto-client] :as deps}]
+(defn page-routes [{:keys [datomic crypto-client] :as deps}]
   (routes
     (GET "/" request (html/index request))
     (GET "/about" request (html/about request))
     (GET "/contact" request (html/contacts request))
     (GET "/sign-up" request (html/sign-up "register" request))
-    (POST "/register" request (html/register datomic-db crypto-client request))))
+    (POST "/register" request (html/register datomic crypto-client request))))
 
-(defn api-routes [{:keys [datomic-db] :as deps}]
+(defn api-routes [{:keys [datomic] :as deps}]
   (routes
     (context "/api" []
       (GET "/register" request (api/sign-up "email" "pass" "confirm")))))
