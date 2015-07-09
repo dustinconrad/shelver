@@ -2,8 +2,10 @@
   (:require [net.cgrand.enlive-html :as html]
             [environ.core :refer [env]]
             [shelver.util :as util]
+            [shelver.oauth :as oauth]
             [shelver.user :as user]
-            [ring.util.anti-forgery :as csrf]))
+            [ring.util.anti-forgery :as csrf]
+            [taoensso.timbre :as timbre]))
 
 (def navigation-items
   [["Home" "/"]
@@ -29,18 +31,21 @@
                   [:li :a] (html/content caption)
                   [:li :a] (html/set-attr :href url)))
 
-(html/defsnippet nav "templates/nav.html" [:body :.navbar] [current-path]
+(html/defsnippet nav-snip "templates/nav.html" [:body :.navbar] [current-path]
                  [[:ul.nav (html/but :.navbar-right)] [:li html/first-of-type]] (replace-nav-item current-path navigation-items)
                  [:ul.nav.navbar-right [:li html/first-of-type]] (replace-nav-item current-path sign-up-items))
 
-(html/defsnippet credentials "templates/credentials.html" [:body :#credentials-box] [register-endpoint]
+(html/defsnippet credentials-snip "templates/credentials.html" [:body :#credentials-box] [register-endpoint]
                  [:#signup-form] (html/set-attr :method "POST"
                                                 :action register-endpoint)
                  [:#csrf] (html/html-content (csrf/anti-forgery-field)))
 
+(html/defsnippet register-snip "templates/register.html" [:body :#register] [approval-uri]
+                 [:.btn] (html/set-attr :href approval-uri))
+
 (html/deftemplate base "templates/base.html" [{:keys [uri] :as req} {:keys [title main] :as props}]
                   [:head :title] (html/content title)
-                  [:body :#nav] (html/substitute (nav uri))
+                  [:body :#nav] (html/substitute (nav-snip uri))
                   [:body :#main] (maybe-substitute main))
 
 (defn index [request]
@@ -54,8 +59,15 @@
 
 (defn sign-up [register-endpoint request]
   (apply str (base request {:title "shelver - Sign Up"
-                            :main (credentials register-endpoint)})))
+                            :main (credentials-snip register-endpoint)})))
 
-(defn register [datomic crypto-client request]
-  (user/create-user datomic crypto-client (:params request))
+(defn register [confirm-endpoint base-uri datomic crypto-client oauth-client request]
+  (let [callback-uri (str base-uri "/" confirm-endpoint)
+        request-token (oauth/request-token oauth-client callback-uri)
+        approval-uri  (oauth/user-approval-uri oauth-client request-token)]
+    (user/create-user (:conn datomic) crypto-client (:params request))
+    (apply str (base request {:title "shelver - Register"
+                              :main (register-snip approval-uri)}))))
+
+(defn confirm [request]
   "<html>test</html>")

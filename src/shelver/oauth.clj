@@ -35,9 +35,9 @@
   (credentials [this access-token request-method request-uri params]
     (oauth/credentials (:consumer this) (:oauth_token access-token) (:oauth_token_secret access-token) request-method request-uri params)))
 
-(defn new-oauth-client [goodreads-api-key goodreads-api-secret]
-  (map->DefaultOAuthClient {:api-key           goodreads-api-key
-                            :api-secret        goodreads-api-secret
+(defn new-goodreads-oauth-client [api-key api-secret]
+  (map->DefaultOAuthClient {:api-key           api-key
+                            :api-secret        api-secret
                             :request-token-url "https://www.goodreads.com/oauth/request_token"
                             :access-token-url  "https://www.goodreads.com/oauth/access_token"
                             :authorize-url     "https://www.goodreads.com/oauth/authorize"

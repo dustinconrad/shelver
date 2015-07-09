@@ -36,6 +36,7 @@
 
              :dev            [{:source-paths ["dev"]
                                :env          {:http-port   3000
+                                              :base-uri "http://localhost:3000"
                                               :datomic-uri "datomic:dev://datomic-db:4334/shelver"}}
                               :goodreads-api
                               :google-api

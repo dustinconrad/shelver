@@ -10,7 +10,7 @@
 
 (defn default-oauth-client []
   (->>
-    (oauth/new-oauth-client (env :goodreads-api-key) (env :goodreads-api-secret))
+    (oauth/new-goodreads-oauth-client (env :goodreads-api-key) (env :goodreads-api-secret))
     component/start))
 
 (deftest test-goodreads-client
