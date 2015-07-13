@@ -1,11 +1,14 @@
 (ns shelver.handler
-  (:require [taoensso.timbre :as timbre]
-            [environ.core :refer [env]]
+  (:require [environ.core :refer [env]]
+            [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders.core :as appenders]
             [compojure.core :refer [defroutes GET POST context routes]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults api-defaults]]
-            [shelver.html :as html]
-            [shelver.api :as api]))
+            [ring.util.response :refer [redirect]]
+            [buddy.auth.backends.session :refer [session-backend]]
+            [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
+            [buddy.auth :refer [authenticated? throw-unauthorized]]
+            [shelver.html :as html]))
 
 (defn wrap-log-request [handler]
   (fn [req]
@@ -15,6 +18,15 @@
       (timbre/info req))
     (handler req)))
 
+(defn wrap-log-response [handler]
+  (fn [req]
+    (let [resp (handler req)]
+      (timbre/with-merged-config
+        {:appenders {:response (appenders/spit-appender {:fname "response.log"})
+                     :println  {:enabled? false}}}
+        (timbre/info (dissoc resp :body)))
+      resp)))
+
 (defn wrap-exception [handler]
   (fn [req]
     (try
@@ -23,28 +35,49 @@
         (timbre/error e)
         (throw e)))))
 
-(defn page-routes [{:keys [datomic crypto-client oauth-client] :as deps}]
+(defn wrap-check-auth [handler login-path]
+  (fn [req]
+    (if (authenticated? req)
+      (handler req)
+      (let [[path query] (-> (:uri req)
+                             java.net.URI.
+                             ((juxt #(.getPath %) #(.getQuery %))))
+            redirect-target (-> (format "%s?%s" (or path "") (or query ""))
+                                (java.net.URLEncoder/encode "UTF-8"))]
+        (redirect (format "%s?next=%s" login-path redirect-target))))))
+
+(defn authenticated-routes [{:keys [datomic crypto-client oauth-client] :as deps}]
+  (-> (routes
+        (GET "/confirm" [oauth_token authorize :as request] (html/confirm datomic oauth_token authorize request)))
+      (wrap-check-auth "/sign-up")))
+
+(defn public-routes [{:keys [datomic crypto-client oauth-client] :as deps}]
   (routes
     (GET "/" request (html/index request))
     (GET "/about" request (html/about request))
     (GET "/contact" request (html/contacts request))
     (GET "/sign-up" request (html/sign-up "register" request))
-    (POST "/register" request (html/register "confirm" (env :base-uri) datomic crypto-client oauth-client request))
-    (GET "/confirm" request (html/confirm request))))
+    (POST "/register" request (html/register datomic crypto-client oauth-client request))))
 
-(defn api-routes [{:keys [datomic] :as deps}]
-  (routes
-    (context "/api" []
-      (GET "/register" request (api/sign-up "email" "pass" "confirm")))))
+;(defn api-routes [{:keys [datomic] :as deps}]
+;  (routes
+;    (context "/api" []
+;      (GET "/register" request (api/sign-up "email" "pass" "confirm")))))
+;
+;(defn app [deps]
+;  (let [apis (api-routes deps)
+;        pages (-> (page-routes deps)
+;                  (wrap-defaults site-defaults))]
+;    (-> (routes apis pages)
+;        wrap-log-request
+;        (wrap-defaults api-defaults)
+;        wrap-log-response
+;        wrap-exception)))
 
 (defn app [deps]
-  (let [apis (-> (api-routes deps)
-                 wrap-log-request
-                 wrap-exception)
-        pages (-> (page-routes deps)
-                  wrap-log-request
-                  wrap-exception
-                  (wrap-defaults site-defaults))]
-
-    (-> (routes apis pages)
-        (wrap-defaults api-defaults))))
+  (-> (routes (public-routes deps) (authenticated-routes deps))
+      wrap-log-request
+      (wrap-authentication (session-backend))
+      (wrap-defaults site-defaults)
+      wrap-log-response
+      wrap-exception))

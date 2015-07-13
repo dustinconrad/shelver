@@ -20,4 +20,41 @@
            :db/cardinality :db.cardinality/one
            :db/doc "A user's password salt"
            :db.install/_attribute :db.part/db}
+
+          {:db/id #db/id [:db.part/db]
+           :db/ident :user/oauth-token
+           :db/valueType :db.type/ref
+           :db/cardinality :db.cardinality/one
+           :db/doc "Oauth token for this user (request or access)"
+           :db.install/_attribute :db.part/db}
+          ]]}
+
+ :shelver/oauth-token-schema
+ {:txes [[{:db/id #db/id [:db.part/db]
+           :db/ident :oauth-token/oauth_token
+           :db/valueType :db.type/string
+           :db/cardinality :db.cardinality/one
+           :db/doc "An oauth token"
+           :db.install/_attribute :db.part/db}
+
+          {:db/id #db/id [:db.part/db]
+           :db/ident :oauth-token/oauth_token_secret
+           :db/valueType :db.type/string
+           :db/cardinality :db.cardinality/one
+           :db/doc "An oauth token's secret"
+           :db.install/_attribute :db.part/db}
+
+          {:db/id #db/id [:db.part/db]
+           :db/ident :oauth-token/type
+           :db/valueType :db.type/ref
+           :db/cardinality :db.cardinality/one
+           :db/doc "A token's type (request or access)"
+           :db.install/_attribute :db.part/db}
+
+          {:db/id #db/id [:db.part/user]
+           :db/ident :oauth-token.type/request}
+
+          {:db/id #db/id [:db.part/user]
+           :db/ident :oauth-token.type/access}
+
           ]]}}

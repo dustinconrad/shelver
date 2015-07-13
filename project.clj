@@ -19,6 +19,7 @@
                  [clj-http "1.1.0"]
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/data.zip "0.1.1"]
+                 [buddy/buddy-auth "0.6.0"]
                  [com.datomic/datomic-pro "0.9.5173"]
                  [io.rkn/conformity "0.3.4" :exclusions [com.datomic/datomic-free]]]
   :plugins [[lein-gorilla "0.3.4"]
@@ -36,7 +37,6 @@
 
              :dev            [{:source-paths ["dev"]
                                :env          {:http-port   3000
-                                              :base-uri "http://localhost:3000"
                                               :datomic-uri "datomic:dev://datomic-db:4334/shelver"}}
                               :goodreads-api
                               :google-api

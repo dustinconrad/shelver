@@ -1,11 +1,13 @@
 (ns shelver.html
   (:require [net.cgrand.enlive-html :as html]
             [environ.core :refer [env]]
+            [datomic.api :as d :refer [db q]]
             [shelver.util :as util]
             [shelver.oauth :as oauth]
             [shelver.user :as user]
             [ring.util.anti-forgery :as csrf]
-            [taoensso.timbre :as timbre]))
+            [taoensso.timbre :as timbre]
+            [compojure.response :refer [render]]))
 
 (def navigation-items
   [["Home" "/"]
@@ -59,15 +61,25 @@
 
 (defn sign-up [register-endpoint request]
   (apply str (base request {:title "shelver - Sign Up"
-                            :main (credentials-snip register-endpoint)})))
+                            :main  (credentials-snip register-endpoint)})))
 
-(defn register [confirm-endpoint base-uri datomic crypto-client oauth-client request]
-  (let [callback-uri (str base-uri "/" confirm-endpoint)
-        request-token (oauth/request-token oauth-client callback-uri)
-        approval-uri  (oauth/user-approval-uri oauth-client request-token)]
-    (user/create-user (:conn datomic) crypto-client (:params request))
-    (apply str (base request {:title "shelver - Register"
-                              :main (register-snip approval-uri)}))))
+(defn register [datomic crypto-client oauth-client request]
+  (let [request-token (-> (oauth/request-token oauth-client nil)
+                          (assoc :type :request))
+        approval-uri (->> request-token
+                          (oauth/user-approval-uri oauth-client))
+        result (user/create-user (:conn datomic) crypto-client (assoc (:params request) :oauth-token request-token))]
+    (when @result
+      (let [updated-session (-> (:session request)
+                                (assoc :identity (get-in request [:params :email])))]
+        (-> (apply str (base request {:title "shelver - Register"
+                                     :main  (register-snip approval-uri)}))
+            (render request)
+            (assoc :session updated-session))))))
 
-(defn confirm [request]
-  "<html>test</html>")
+(defn confirm [datomic oauth_token authorize request]
+  (let [datomic-db (db (:conn datomic))
+        user (user/find-user datomic-db (:identity request))]
+    (if (= "1" authorize)
+     "<html>yep</html>"
+     "<html>not</html>")))
