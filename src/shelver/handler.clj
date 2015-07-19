@@ -2,7 +2,7 @@
   (:require [environ.core :refer [env]]
             [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders.core :as appenders]
-            [compojure.core :refer [defroutes GET POST context routes]]
+            [compojure.core :refer [defroutes GET POST rfn context routes wrap-routes]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults api-defaults]]
             [ring.util.response :refer [redirect]]
             [buddy.auth.backends.session :refer [session-backend]]
@@ -49,7 +49,7 @@
 (defn authenticated-routes [{:keys [datomic crypto-client oauth-client] :as deps}]
   (-> (routes
         (GET "/confirm" [oauth_token authorize :as request] (html/confirm datomic oauth_token authorize request)))
-      (wrap-check-auth "/sign-up")))
+      (wrap-routes #(wrap-check-auth % "/sign-up"))))
 
 (defn public-routes [{:keys [datomic crypto-client oauth-client] :as deps}]
   (routes
@@ -58,6 +58,10 @@
     (GET "/contact" request (html/contacts request))
     (GET "/sign-up" request (html/sign-up "register" request))
     (POST "/register" request (html/register datomic crypto-client oauth-client request))))
+
+(defn base-routes []
+  (routes
+    (rfn request (html/not-found request))))
 
 ;(defn api-routes [{:keys [datomic] :as deps}]
 ;  (routes
@@ -75,7 +79,7 @@
 ;        wrap-exception)))
 
 (defn app [deps]
-  (-> (routes (public-routes deps) (authenticated-routes deps))
+  (-> (routes (public-routes deps) (authenticated-routes deps) (base-routes))
       wrap-log-request
       (wrap-authentication (session-backend))
       (wrap-defaults site-defaults)

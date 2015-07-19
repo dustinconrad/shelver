@@ -2,11 +2,9 @@
   (:require [net.cgrand.enlive-html :as html]
             [environ.core :refer [env]]
             [datomic.api :as d :refer [db q]]
-            [shelver.util :as util]
             [shelver.oauth :as oauth]
             [shelver.user :as user]
             [ring.util.anti-forgery :as csrf]
-            [taoensso.timbre :as timbre]
             [compojure.response :refer [render]]))
 
 (def navigation-items
@@ -45,23 +43,30 @@
 (html/defsnippet register-snip "templates/register.html" [:body :#register] [approval-uri]
                  [:.btn] (html/set-attr :href approval-uri))
 
-(html/deftemplate base "templates/base.html" [{:keys [uri] :as req} {:keys [title main] :as props}]
+(html/defsnippet not-found-snip "templates/notfound.html" [:body :#notfound] [])
+
+(html/deftemplate base "templates/base.html" [{:keys [title main] :as props} {:keys [uri] :as req}]
                   [:head :title] (html/content title)
                   [:body :#nav] (html/substitute (nav-snip uri))
                   [:body :#main] (maybe-substitute main))
 
 (defn index [request]
-  (apply str (base request {:title "shelver"})))
+  (apply str (base {:title "shelver"} request)))
 
 (defn about [request]
-  (apply str (base request {:title "shelver - About"})))
+  (apply str (base {:title "shelver - About"} request)))
 
 (defn contacts [request]
-  (apply str (base request {:title "shelver - Contacts"})))
+  (apply str (base {:title "shelver - Contacts"} request)))
 
 (defn sign-up [register-endpoint request]
-  (apply str (base request {:title "shelver - Sign Up"
-                            :main  (credentials-snip register-endpoint)})))
+  (apply str (base {:title "shelver - Sign Up"
+                    :main  (credentials-snip register-endpoint)} request)))
+
+(defn not-found [request]
+  (apply str (base {:title "shelver - not found"
+                    :main (not-found-snip)
+                    } request)))
 
 (defn register [datomic crypto-client oauth-client request]
   (let [request-token (-> (oauth/request-token oauth-client nil)
@@ -72,8 +77,9 @@
     (when @result
       (let [updated-session (-> (:session request)
                                 (assoc :identity (get-in request [:params :email])))]
-        (-> (apply str (base request {:title "shelver - Register"
-                                     :main  (register-snip approval-uri)}))
+        (-> (apply str (base {:title "shelver - Register"
+                              :main  (register-snip approval-uri)}
+                             request))
             (render request)
             (assoc :session updated-session))))))
 

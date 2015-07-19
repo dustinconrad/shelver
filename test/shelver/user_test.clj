@@ -9,7 +9,7 @@
 
 (def datomic nil)
 
-;"datomic:dev://datomic-db:4334/shelver" 
+;"datomic:dev://datomic-db:4334/shelver"
 (defn datomic-test-fixture [test-fn]
   (let [datomic-component (-> (new-datomic "datomic:mem://shelver" "migrations/schema.edn")
                               component/start)]
