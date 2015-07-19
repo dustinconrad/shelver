@@ -7,11 +7,20 @@
             [datomic.api :as d :refer [db q]]
             [com.stuartsierra.component :as component]))
 
+(def datomic nil)
+
+;"datomic:dev://datomic-db:4334/shelver" 
+(defn datomic-test-fixture [test-fn]
+  (let [datomic-component (-> (new-datomic "datomic:mem://shelver" "migrations/schema.edn")
+                              component/start)]
+    (with-redefs [datomic datomic-component]
+      (test-fn))
+    (component/stop datomic-component)))
+
+(use-fixtures :once datomic-test-fixture)
+
 (deftest test-create-user
-  (let [datomic-uri (or "datomic:dev://datomic-db:4334/shelver" "datomic:mem://shelver")
-        datomic (-> (new-datomic datomic-uri "migrations/schema.edn")
-                    component/start)
-        crypto-client (crypto/->DefaultCryptoClient 4321 64 32)]
+  (let [crypto-client (crypto/->DefaultCryptoClient 4321 64 32)]
     (testing "testing create and find a user"
       (let [email (-> (java.util.UUID/randomUUID)
                       str
@@ -39,10 +48,7 @@
       (is (nil? (user/find-user (db (:conn datomic)) (str (java.util.UUID/randomUUID))))))))
 
 (deftest test-oauth-token
-  (let [datomic-uri (or "datomic:dev://datomic-db:4334/shelver" "datomic:mem://shelver")
-        datomic (-> (new-datomic datomic-uri "migrations/schema.edn")
-                    component/start)
-        crypto-client (crypto/->DefaultCryptoClient 4321 64 32)]
+  (let [crypto-client (crypto/->DefaultCryptoClient 4321 64 32)]
     (testing "testing find an oauth token attached to a user"
       (let [email (-> (java.util.UUID/randomUUID)
                       str
