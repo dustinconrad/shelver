@@ -48,6 +48,7 @@
            :db/ident :oauth-token/type
            :db/valueType :db.type/ref
            :db/cardinality :db.cardinality/one
+           :db/isComponent true
            :db/doc "A token's type (request or access)"
            :db.install/_attribute :db.part/db}
 

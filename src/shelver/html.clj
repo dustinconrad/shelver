@@ -79,7 +79,10 @@
 
 (defn confirm [datomic oauth_token authorize request]
   (let [datomic-db (db (:conn datomic))
-        user (user/find-user datomic-db (:identity request))]
-    (if (= "1" authorize)
-     "<html>yep</html>"
-     "<html>not</html>")))
+        email (:identity request)]
+    (when-let [found-token (user/find-oauth-token datomic-db email oauth_token)]
+      (if (= "1" authorize)
+        (let [updated-token (assoc found-token :type :access)]
+          (when @(user/update-oauth-token (:conn datomic) updated-token)
+            "<html>yep</html>"))
+        "<html>nope</html>"))))

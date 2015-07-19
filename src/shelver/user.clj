@@ -5,9 +5,11 @@
 
 (defn- ->entity [ns model]
   (into {} (map (fn [[k v]]
-                  (let [new-key (keyword ns (name k))
+                  (let [new-key (if (= "id" (name k))
+                                  (keyword "db" (name k))
+                                  (keyword ns (name k)))
                         new-val (if (keyword? v)
-                                  (keyword (format "%s.%s/%s" ns k v))
+                                  (keyword (format "%s.%s/%s" ns (name k) (name v)))
                                   v)]
                     (vector new-key new-val)))
                 model)))
@@ -16,7 +18,9 @@
   (into {} (map (fn [[k v]]
                   (let [new-key (keyword (name k))
                         new-val (if (map? v)
-                                  (->model v)
+                                  (if (keyword? (:db/ident v))
+                                    (keyword (name (:db/ident v)))
+                                    (->model v))
                                   v)]
                     (vector new-key new-val)))
                 entity)))
@@ -37,7 +41,7 @@
         [user-entity]))))
 
 (defn find-user [datomic-db email]
-  (-> (q '[:find (pull ?u [* {:user/oauth-token [:db/id :oauth-token/oauth_token :oauth-token/oauth_token_secret]}])
+  (some-> (q '[:find (pull ?u [* {:user/oauth-token [*]}])
            :in $ ?email
            :where
            [?u :user/email ?email]]
@@ -45,3 +49,22 @@
          email)
       ffirst
       ->model))
+
+(defn find-oauth-token [datomic-db email oauth-token-string]
+  (some-> (q '[:find (pull ?o [*])
+           :in $ ?e ?t
+           :where
+           [?u :user/email ?e]
+           [?u :user/oauth-token ?o]
+           [?o :oauth-token/oauth_token ?t]]
+         datomic-db
+         email
+         oauth-token-string)
+      ffirst
+      ->model))
+
+(defn update-oauth-token [datomic-conn oauth-token]
+  (let [token-entity (->entity "oauth-token" oauth-token)]
+    (d/transact
+      datomic-conn
+      [token-entity])))
