@@ -5,6 +5,7 @@
             [shelver.oauth :as oauth]
             [shelver.user :as user]
             [ring.util.anti-forgery :as csrf]
+            [ring.util.response :refer [redirect]]
             [compojure.response :refer [render]]))
 
 (def navigation-items
@@ -31,23 +32,33 @@
                   [:li :a] (html/content caption)
                   [:li :a] (html/set-attr :href url)))
 
-(html/defsnippet nav-snip "templates/nav.html" [:body :.navbar] [current-path]
+(html/defsnippet logout-snip "templates/logout.html" [:#logout-form] [logout-path]
+                 [:#logout-form] (html/set-attr :method "POST"
+                                                :action logout-path)
+                 [:#logout-csrf] (html/html-content (csrf/anti-forgery-field)))
+
+(html/defsnippet nav-snip "templates/nav.html" [:body :.navbar] [logout-path current-path user-identity]
                  [[:ul.nav (html/but :.navbar-right)] [:li html/first-of-type]] (replace-nav-item current-path navigation-items)
+                 [:ul.nav.navbar-right] (maybe-substitute
+                                          (when user-identity
+                                            (logout-snip logout-path)))
                  [:ul.nav.navbar-right [:li html/first-of-type]] (replace-nav-item current-path sign-up-items))
 
 (html/defsnippet credentials-snip "templates/credentials.html" [:body :#credentials-box] [register-endpoint]
                  [:#signup-form] (html/set-attr :method "POST"
                                                 :action register-endpoint)
-                 [:#csrf] (html/html-content (csrf/anti-forgery-field)))
+                 [:#signup-csrf] (html/html-content (csrf/anti-forgery-field)))
 
 (html/defsnippet register-snip "templates/register.html" [:body :#register] [approval-uri]
                  [:.btn] (html/set-attr :href approval-uri))
 
 (html/defsnippet not-found-snip "templates/notfound.html" [:body :#notfound] [])
 
-(html/deftemplate base "templates/base.html" [{:keys [title main] :as props} {:keys [uri] :as req}]
+(html/defsnippet confirm-deny-snip "templates/confirm-deny.html" [:body :#confirm-deny] [])
+
+(html/deftemplate base "templates/base.html" [{:keys [title main] :as props} {:keys [uri identity] :as req}]
                   [:head :title] (html/content title)
-                  [:body :#nav] (html/substitute (nav-snip uri))
+                  [:body :#nav] (html/substitute (nav-snip "/logout" uri identity))
                   [:body :#main] (maybe-substitute main))
 
 (defn index [request]
@@ -64,9 +75,9 @@
                     :main  (credentials-snip register-endpoint)} request)))
 
 (defn not-found [request]
-  (apply str (base {:title "shelver - not found"
-                    :main (not-found-snip)
-                    } request)))
+  (apply str (base {:title "shelver - Not Found"
+                    :main (not-found-snip)}
+                   request)))
 
 (defn register [datomic crypto-client oauth-client request]
   (let [request-token (-> (oauth/request-token oauth-client nil)
@@ -90,5 +101,7 @@
       (if (= "1" authorize)
         (let [updated-token (assoc found-token :type :access)]
           (when @(user/update-oauth-token (:conn datomic) updated-token)
-            "<html>yep</html>"))
-        "<html>nope</html>"))))
+            (redirect "/")))
+        (apply str (base {:title "shelver - Denied"
+                          :main (confirm-deny-snip)}
+                         request))))))

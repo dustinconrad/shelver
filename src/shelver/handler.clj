@@ -3,6 +3,7 @@
             [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders.core :as appenders]
             [compojure.core :refer [defroutes GET POST rfn context routes wrap-routes]]
+            [compojure.response :refer [render]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults api-defaults]]
             [ring.util.response :refer [redirect]]
             [buddy.auth.backends.session :refer [session-backend]]
@@ -57,7 +58,11 @@
     (GET "/about" request (html/about request))
     (GET "/contact" request (html/contacts request))
     (GET "/sign-up" request (html/sign-up "register" request))
-    (POST "/register" request (html/register datomic crypto-client oauth-client request))))
+    (POST "/register" request (html/register datomic crypto-client oauth-client request))
+    (POST "/logout" request (let [updated-session (dissoc (:session request) :identity)]
+                              (-> (redirect "/")
+                                  (render request)
+                                  (assoc :session updated-session))))))
 
 (defn base-routes []
   (routes
