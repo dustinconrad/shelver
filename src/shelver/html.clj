@@ -24,6 +24,10 @@
   ([expr] `(if-let [x# ~expr] (html/content x#) identity))
   ([expr & exprs] `(maybe-content (or ~expr ~@exprs))))
 
+(defmacro maybe-append
+  ([expr] `(if-let [x# ~expr] (html/append x#) identity))
+  ([expr & exprs] `(maybe-append (or ~expr ~@exprs))))
+
 (defn- replace-nav-item [current-path nav-items]
   (html/clone-for [[caption url] nav-items]
                   [:li] (if (= current-path url)
@@ -56,10 +60,11 @@
 
 (html/defsnippet confirm-deny-snip "templates/confirm-deny.html" [:body :#confirm-deny] [])
 
-(html/deftemplate base "templates/base.html" [{:keys [title main] :as props} {:keys [uri identity] :as req}]
+(html/deftemplate base "templates/base.html" [{:keys [title main scripts] :as props} {:keys [uri identity] :as req}]
                   [:head :title] (html/content title)
                   [:body :#nav] (html/substitute (nav-snip "/logout" uri identity))
-                  [:body :#main] (maybe-substitute main))
+                  [:body :#main] (maybe-substitute main)
+                  [:body] (maybe-append scripts))
 
 (defn index [request]
   (apply str (base {:title "shelver"} request)))
@@ -72,7 +77,9 @@
 
 (defn sign-up [register-endpoint request]
   (apply str (base {:title "shelver - Sign Up"
-                    :main  (credentials-snip register-endpoint)} request)))
+                    :main  (credentials-snip register-endpoint)
+                    :scripts [(html/html [:script {:src "/js/validator.js"}])]}
+                   request)))
 
 (defn not-found [request]
   (apply str (base {:title "shelver - Not Found"
