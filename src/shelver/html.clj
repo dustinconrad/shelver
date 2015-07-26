@@ -78,7 +78,7 @@
 (defn sign-up [register-endpoint request]
   (apply str (base {:title "shelver - Sign Up"
                     :main  (credentials-snip register-endpoint)
-                    :scripts [(html/html [:script {:src "/js/validator.js"}])]}
+                    :scripts [(html/html [:script {:src "/js/validator.js"}]) (html/html [:script {:src "/js/credentials.js"}])]}
                    request)))
 
 (defn not-found [request]
