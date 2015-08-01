@@ -2,9 +2,7 @@
   (:require [net.cgrand.enlive-html :as html]
             [environ.core :refer [env]]
             [datomic.api :as d :refer [db q]]
-            [shelver.oauth :as oauth]
-            [shelver.user-dao :as user]
-            [shelver.user :as us]
+            [shelver.user :as user]
             [ring.util.anti-forgery :as csrf]
             [ring.util.response :refer [redirect]]
             [compojure.response :refer [render]]))
@@ -88,7 +86,7 @@
                    request)))
 
 (defn register [datomic crypto-client oauth-client request]
-  (let [approval-uri (us/register-user datomic, crypto-client oauth-client (:params request))]
+  (let [approval-uri (user/register-user datomic crypto-client oauth-client (:params request))]
     (when approval-uri
       (let [updated-session (-> (:session request)
                                 (assoc :identity (get-in request [:params :email])))]
@@ -99,13 +97,9 @@
             (assoc :session updated-session))))))
 
 (defn confirm [datomic oauth-client oauth_token authorize request]
-  (let [datomic-db (db (:conn datomic))
-        email (:identity request)]
-    (when-let [found-token (user/find-oauth-token datomic-db email oauth_token :request)]
-      (if (= "1" authorize)
-        (let [access-token (oauth/access-token oauth-client found-token nil)]
-          (when @(user/update-oauth-token (:conn datomic) (merge found-token {:type :access} access-token))
-            (redirect "/")))
-        (apply str (base {:title "shelver - Denied"
-                          :main (confirm-deny-snip)}
-                         request))))))
+  (if (= "1" authorize)
+    (when (user/confirm-registration datomic oauth-client oauth_token (:identity request))
+      (redirect "/"))
+    (apply str (base {:title "shelver - Denied"
+                      :main  (confirm-deny-snip)}
+                     request))))
