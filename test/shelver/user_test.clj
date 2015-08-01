@@ -59,10 +59,10 @@
             db-after (-> (user/create-user (:conn datomic) crypto-client {:email email :password "password" :oauth-token token})
                          deref
                          :db-after)
-            found-token (user/find-oauth-token db-after email token-string)]
+            found-token (user/find-oauth-token db-after email token-string :request)]
         (is (= token (dissoc found-token :id)))))
     (testing "testing find non-existing oauth token"
-      (is (nil? (user/find-oauth-token (db (:conn datomic)) (str (java.util.UUID/randomUUID)) (str (java.util.UUID/randomUUID))))))
+      (is (nil? (user/find-oauth-token (db (:conn datomic)) (str (java.util.UUID/randomUUID)) (str (java.util.UUID/randomUUID)) :request))))
     (testing "testing update oauth token"
       (let [email (-> (java.util.UUID/randomUUID)
                       str
@@ -73,10 +73,10 @@
             db-after (-> (user/create-user (:conn datomic) crypto-client {:email email :password "password" :oauth-token token})
                          deref
                          :db-after)
-            found-token (user/find-oauth-token db-after email token-string)
+            found-token (user/find-oauth-token db-after email token-string :request)
             updated-token (assoc found-token :type :access)
             found-updated (-> (user/update-oauth-token (:conn datomic) updated-token)
                               deref
                               :db-after
-                              (user/find-oauth-token email token-string))]
+                              (user/find-oauth-token email token-string :access))]
         (is (= updated-token found-updated))))))

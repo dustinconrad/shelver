@@ -49,8 +49,14 @@
 
 (defn authenticated-routes [{:keys [datomic crypto-client oauth-client] :as deps}]
   (-> (routes
-        (GET "/confirm" [oauth_token authorize :as request] (html/confirm datomic oauth_token authorize request)))
+        (GET "/confirm" [oauth_token authorize :as request] (html/confirm datomic oauth-client oauth_token authorize request)))
       (wrap-routes #(wrap-check-auth % "/sign-up"))))
+
+(defn logout [request]
+  (let [updated-session (dissoc (:session request) :identity)]
+    (-> (redirect "/")
+        (render request)
+        (assoc :session updated-session))))
 
 (defn public-routes [{:keys [datomic crypto-client oauth-client] :as deps}]
   (routes
@@ -59,10 +65,7 @@
     (GET "/contact" request (html/contacts request))
     (GET "/sign-up" request (html/sign-up "register" request))
     (POST "/register" request (html/register datomic crypto-client oauth-client request))
-    (POST "/logout" request (let [updated-session (dissoc (:session request) :identity)]
-                              (-> (redirect "/")
-                                  (render request)
-                                  (assoc :session updated-session))))))
+    (POST "/logout" request (logout request))))
 
 (defn base-routes []
   (routes

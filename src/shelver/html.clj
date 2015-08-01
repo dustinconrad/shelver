@@ -14,7 +14,7 @@
    ["Contact" "/contact"]])
 
 (def sign-up-items
-  [["Sign Up" "/sign-up"]])
+  [["Sign Up/In" "/sign-up"]])
 
 (defmacro maybe-substitute
   ([expr] `(if-let [x# ~expr] (html/substitute x#) identity))
@@ -101,13 +101,13 @@
             (render request)
             (assoc :session updated-session))))))
 
-(defn confirm [datomic oauth_token authorize request]
+(defn confirm [datomic oauth-client oauth_token authorize request]
   (let [datomic-db (db (:conn datomic))
         email (:identity request)]
-    (when-let [found-token (user/find-oauth-token datomic-db email oauth_token)]
+    (when-let [found-token (user/find-oauth-token datomic-db email oauth_token :request)]
       (if (= "1" authorize)
-        (let [updated-token (assoc found-token :type :access)]
-          (when @(user/update-oauth-token (:conn datomic) updated-token)
+        (let [access-token (oauth/access-token oauth-client found-token nil)]
+          (when @(user/update-oauth-token (:conn datomic) (merge found-token {:type :access} access-token))
             (redirect "/")))
         (apply str (base {:title "shelver - Denied"
                           :main (confirm-deny-snip)}

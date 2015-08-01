@@ -37,11 +37,13 @@
 
              :dev            [{:source-paths ["dev"]
                                :env          {:http-port   3000
+                                              :test-user-id 45511156
                                               :datomic-uri "datomic:dev://datomic-db:4334/shelver"}}
                               :goodreads-api
                               :google-api
-                              :crypto-client]
-             :test           [:goodreads-api :google-api :goodreads-test]
+                              :crypto-client
+                              :goodreads-test]
+             :test           [{:test-user-id 45511156} :goodreads-api :google-api :goodreads-test]
              :prod           {:env          {:http-port 8000
                                              :repl-port 8001}
                               :dependencies [[org.clojure/tools.nrepl "0.2.5"]]}

@@ -15,7 +15,7 @@
 
 (deftest test-goodreads-client
   (testing "Testing"
-    (let [goodreads-client (gr/new-goodreads-client (default-oauth-client) (env :goodreads-access-token) nil)]
+    (let [goodreads-client (gr/new-goodreads-client (default-oauth-client) (env :goodreads-access-token) (env :test-user-id))]
       (testing "auth-user"
         ;<GoodreadsResponse>
         ;  <Request>
@@ -33,7 +33,7 @@
                        zip/xml-zip
                        (zx/xml1-> :user :name)
                        zx/text)]
-          (is (= name "Conrad"))))
+          (is (= name "Test User"))))
       (testing "list shelves"
         ;<GoodreadsResponse>
         ;  <Request>
@@ -91,7 +91,7 @@
         ;</GoodreadsResponse>
         (testing "page 1"
           (let [resp (gr/get-shelves goodreads-client 1)
-                id "138241012"
+                id "148110785"
                 to-read (-> resp
                             zip/xml-zip
                             (zx/xml1-> :shelves :user_shelf [:id id]))
@@ -115,11 +115,11 @@
             (is (empty? shelves))))
         (testing "find by shelf name"
           (let [name "to-read"
-                expected-id "138241012"
+                expected-id "148110785"
                 shelf (gr/get-shelf-by-name goodreads-client name)]
             (is (= expected-id (-> shelf zip/xml-zip (zx/xml1-> :id) zx/text))))
           (let [name "currently-reading"
-                expected-id "138241013"
+                expected-id "148110786"
                 shelf (gr/get-shelf-by-name goodreads-client name)]
             (is (= expected-id (-> shelf zip/xml-zip (zx/xml1-> :id) zx/text)))))))))
 
