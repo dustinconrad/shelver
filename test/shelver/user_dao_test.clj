@@ -1,7 +1,7 @@
-(ns shelver.user-test
+(ns shelver.user-dao-test
   (:require [clojure.test :refer :all]
             [shelver.util :refer :all]
-            [shelver.user :as user]
+            [shelver.user-dao :as user]
             [shelver.crypto :as crypto]
             [shelver.datomic :refer [new-datomic]]
             [datomic.api :as d :refer [db q]]
@@ -29,6 +29,7 @@
             password (.toString (java.util.UUID/randomUUID))
             db-after (-> (user/create-user (:conn datomic) crypto-client {:email email :password password})
                          deref
+                         dbg-v
                          :db-after)
             found (user/find-user db-after email)]
         (is (= email (:email found)))

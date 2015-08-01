@@ -3,7 +3,8 @@
             [environ.core :refer [env]]
             [datomic.api :as d :refer [db q]]
             [shelver.oauth :as oauth]
-            [shelver.user :as user]
+            [shelver.user-dao :as user]
+            [shelver.user :as us]
             [ring.util.anti-forgery :as csrf]
             [ring.util.response :refer [redirect]]
             [compojure.response :refer [render]]))
@@ -87,12 +88,8 @@
                    request)))
 
 (defn register [datomic crypto-client oauth-client request]
-  (let [request-token (-> (oauth/request-token oauth-client nil)
-                          (assoc :type :request))
-        approval-uri (->> request-token
-                          (oauth/user-approval-uri oauth-client))
-        result (user/create-user (:conn datomic) crypto-client (assoc (:params request) :oauth-token request-token))]
-    (when @result
+  (let [approval-uri (us/register-user datomic, crypto-client oauth-client (:params request))]
+    (when approval-uri
       (let [updated-session (-> (:session request)
                                 (assoc :identity (get-in request [:params :email])))]
         (-> (apply str (base {:title "shelver - Register"
