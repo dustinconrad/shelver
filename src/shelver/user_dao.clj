@@ -31,7 +31,7 @@
 (defn create-user [datomic-conn crypto-client {:keys [email password oauth-token] :as user}]
   (let [[hash salt] (crypto/encrypt-password crypto-client password)
         user-entity {:db/id              #db/id[:db.part/user]
-                     :user/email         (clojure.string/lower-case email)
+                     :user/email         email
                      :user/password-hash hash
                      :user/password-salt salt}]
     (d/transact
@@ -49,7 +49,7 @@
                :where
                [?u :user/email ?email]]
              datomic-db
-             (clojure.string/lower-case email))
+             email)
           ffirst
           ->model))
 
@@ -62,7 +62,7 @@
                [?o :oauth-token/oauth_token ?t]
                [?o :oauth-token/type ?tp]]
              datomic-db
-             (clojure.string/lower-case email)
+             email
              oauth-token-string
              (->enum "oauth-token" :type type))
           ffirst
