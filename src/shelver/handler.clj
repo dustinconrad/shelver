@@ -68,6 +68,20 @@
 
 (def resolve-redirect-next (partial resolve-redirect "next"))
 
+(defn logout [request]
+  (let [updated-session (dissoc (:session request) :identity)]
+    (-> (redirect "/")
+        (render request)
+        (assoc :session updated-session))))
+
+(defn login [datomic crypto-client request]
+  (when (user/login datomic crypto-client (:params request))
+    (let [updated-session (-> (:session request)
+                              (assoc :identity (get-in request [:params :email])))]
+      (-> (redirect "/")
+          (render request)
+          (assoc :session updated-session)))))
+
 (defn wrap-check-auth [handler login-path]
   (fn [req]
     (if (authenticated? req)
@@ -82,21 +96,7 @@
 (defn authenticated-routes [{:keys [datomic crypto-client oauth-client] :as deps}]
   (-> (routes
         (GET "/confirm" [oauth_token authorize :as request] (html/confirm datomic oauth-client oauth_token authorize request)))
-      (wrap-routes #(wrap-check-auth % "/sign-up"))))
-
-(defn logout [request]
-  (let [updated-session (dissoc (:session request) :identity)]
-    (-> (redirect "/")
-        (render request)
-        (assoc :session updated-session))))
-
-(defn login [datomic crypto-client request]
-  (when (user/login datomic crypto-client (:params request))
-    (let [updated-session (-> (:session request)
-                              (assoc :identity (get-in request [:params :email])))]
-      (-> (redirect "/")
-          (render request)
-          (assoc :session updated-session)))))
+      (wrap-routes #(wrap-check-auth % "/sign-up#signin"))))
 
 (defn public-routes [{:keys [datomic crypto-client oauth-client] :as deps}]
   (routes
