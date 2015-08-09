@@ -40,7 +40,7 @@
     (are [base target]
       (let [target-with-base (str "http://targethost.edu" target)
             target-encoded (base64-encode target)]
-        (dbg (= (format "%s&next=%s" base target-encoded) (add-redirect-next base target-with-base))))
+        (= (format "%s&next=%s" base target-encoded) (add-redirect-next base target-with-base)))
 
       "http://host.com/path?q1" "/target"
       "http://host.com/path?q1=v1" "/target"
