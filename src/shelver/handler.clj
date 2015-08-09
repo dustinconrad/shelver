@@ -9,7 +9,9 @@
             [buddy.auth.backends.session :refer [session-backend]]
             [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
             [buddy.auth :refer [authenticated? throw-unauthorized]]
-            [shelver.html :as html]))
+            [shelver.html :as html]
+            [shelver.user :as user]
+            [shelver.util :refer :all]))
 
 (defn wrap-log-request [handler]
   (fn [req]
@@ -36,6 +38,36 @@
         (timbre/error e)
         (throw e)))))
 
+(defn add-redirect [redirect-key base redirect-target]
+  (let [[scheme userInfo host port path query fragment] (-> (java.net.URI. base)
+                                                            ((juxt #(.getScheme %) #(.getUserInfo %) #(.getHost %)
+                                                                   #(.getPort %) #(.getPath %) #(.getQuery %) #(.getFragment %))))
+        relative-target (->> (java.net.URI. redirect-target)
+                             ((juxt #(.getPath %) #(.getQuery %) #(.getFragment %)))
+                             (apply #(java.net.URI. nil nil nil -1 %1 %2 %3))
+                             str)
+        redirect-encoded (-> (java.util.Base64/getUrlEncoder)
+                             (.withoutPadding)
+                             (.encodeToString (.getBytes relative-target "UTF-8")))
+        new-query (format "%s%s=%s" (if query (str query "&") "") redirect-key redirect-encoded)]
+    (-> (java.net.URI. scheme userInfo host port path new-query fragment)
+        str)))
+
+(def add-redirect-next (partial add-redirect "next"))
+
+(defn resolve-redirect [redirect-key uri]
+  (when-let [query-pairs (some-> (java.net.URI. uri)
+                                 (.getQuery)
+                                 (clojure.string/split #"&"))]
+    (when-let [redirect-param (some->> query-pairs
+                                       (map #(clojure.string/split % #"="))
+                                       (some (fn [[k v]] (when (= redirect-key k) v))))]
+      (-> (java.util.Base64/getUrlDecoder)
+          (.decode redirect-param)
+          (String. "UTF-8")))))
+
+(def resolve-redirect-next (partial resolve-redirect "next"))
+
 (defn wrap-check-auth [handler login-path]
   (fn [req]
     (if (authenticated? req)
@@ -57,6 +89,14 @@
     (-> (redirect "/")
         (render request)
         (assoc :session updated-session))))
+
+(defn login [datomic crypto-client request]
+  (when (user/login datomic crypto-client (:params request))
+    (let [updated-session (-> (:session request)
+                              (assoc :identity (get-in request [:params :email])))]
+      (-> (redirect "/")
+          (render request)
+          (assoc :session updated-session)))))
 
 (defn public-routes [{:keys [datomic crypto-client oauth-client] :as deps}]
   (routes
