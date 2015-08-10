@@ -88,13 +88,13 @@
 (defn register [datomic crypto-client oauth-client request]
   (let [approval-uri (user/register-user datomic crypto-client oauth-client (:params request))]
     (when approval-uri
-      (let [updated-session (-> (:session request)
-                                (assoc :identity (get-in request [:params :email])))]
+      (let [new-ident (get-in request [:params :email])
+            updated-request (-> (assoc request :identity new-ident)
+                                (assoc-in [:session :identity] new-ident))]
         (-> (apply str (base {:title "shelver - Register"
                               :main  (register-snip approval-uri)}
-                             request))
-            (render request)
-            (assoc :session updated-session))))))
+                             updated-request))
+            (render updated-request))))))
 
 (defn confirm [datomic oauth-client oauth_token authorize request]
   (if (= "1" authorize)

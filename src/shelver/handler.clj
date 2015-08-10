@@ -86,12 +86,7 @@
   (fn [req]
     (if (authenticated? req)
       (handler req)
-      (let [[path query] (-> (:uri req)
-                             java.net.URI.
-                             ((juxt #(.getPath %) #(.getQuery %))))
-            redirect-target (-> (format "%s?%s" (or path "") (or query ""))
-                                (java.net.URLEncoder/encode "UTF-8"))]
-        (redirect (format "%s?next=%s" login-path redirect-target))))))
+      (redirect (add-redirect-next login-path (:uri req))))))
 
 (defn authenticated-routes [{:keys [datomic crypto-client oauth-client] :as deps}]
   (-> (routes
