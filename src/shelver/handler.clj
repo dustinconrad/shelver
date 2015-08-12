@@ -75,11 +75,10 @@
         (assoc :session updated-session))))
 
 (defn login [datomic crypto-client request]
-  (when (user/login datomic crypto-client (:params request))
-    (let [updated-session (-> (:session request)
-                              (assoc :identity (get-in request [:params :email])))]
+  (when-let [existing (user/login datomic crypto-client (:params request))]
+    (let [new-ident (:email existing)
+          updated-session (assoc (:session request) :identity new-ident)]
       (-> (redirect "/")
-          (render request)
           (assoc :session updated-session)))))
 
 (defn wrap-check-auth [handler login-path]
@@ -98,9 +97,10 @@
     (GET "/" request (html/index request))
     (GET "/about" request (html/about request))
     (GET "/contact" request (html/contacts request))
-    (GET "/sign-up" request (html/sign-up "register" request))
+    (GET "/sign-up" request (html/sign-up "register" "login" request))
     (POST "/register" request (html/register datomic crypto-client oauth-client request))
-    (POST "/logout" request (logout request))))
+    (POST "/logout" request (logout request))
+    (POST "/login" request (login datomic crypto-client request))))
 
 (defn base-routes []
   (routes

@@ -33,4 +33,5 @@
     (let [user (normalize-user dirty-user)
           datomic-db (db (:conn datomic))
           existing-user (ud/find-user datomic-db (:email user))]
-      (crypto/verify-password crypto-client (:password-hash existing-user) (:password user) (:password-salt existing-user)))))
+      (when (crypto/verify-password crypto-client (:password-hash existing-user) (:password user) (:password-salt existing-user))
+        existing-user))))

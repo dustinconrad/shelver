@@ -3,7 +3,7 @@
             [environ.core :refer [env]]
             [datomic.api :as d :refer [db q]]
             [shelver.user :as user]
-            [ring.util.anti-forgery :as csrf]
+            [ring.middleware.anti-forgery :as csrf]
             [ring.util.response :refer [redirect]]
             [compojure.response :refer [render]]))
 
@@ -38,7 +38,8 @@
 (html/defsnippet logout-snip "templates/logout.html" [:#logout-form] [logout-path]
                  [:#logout-form] (html/set-attr :method "POST"
                                                 :action logout-path)
-                 [:#logout-csrf] (html/html-content (csrf/anti-forgery-field)))
+                 [:#logout-csrf] (html/set-attr :name "__anti-forgery-token"
+                                                :value csrf/*anti-forgery-token*))
 
 (html/defsnippet nav-snip "templates/nav.html" [:body :.navbar] [logout-path current-path user-identity]
                  [[:ul.nav (html/but :.navbar-right)] [:li html/first-of-type]] (replace-nav-item current-path navigation-items)
@@ -47,10 +48,15 @@
                                             (logout-snip logout-path)))
                  [:ul.nav.navbar-right [:li html/first-of-type]] (replace-nav-item current-path sign-up-items))
 
-(html/defsnippet credentials-snip "templates/credentials.html" [:body :#credentials-box] [register-endpoint]
+(html/defsnippet credentials-snip "templates/credentials.html" [:body :#credentials-box] [register-endpoint login-endpoint]
                  [:#signup-form] (html/set-attr :method "POST"
                                                 :action register-endpoint)
-                 [:#signup-csrf] (html/html-content (csrf/anti-forgery-field)))
+                 [:#signup-csrf] (html/set-attr :name "__anti-forgery-token"
+                                                :value csrf/*anti-forgery-token*)
+                 [:#login-form] (html/set-attr :method "POST"
+                                               :action login-endpoint)
+                 [:#login-csrf] (html/set-attr :name "__anti-forgery-token"
+                                               :value csrf/*anti-forgery-token*))
 
 (html/defsnippet register-snip "templates/register.html" [:body :#register] [approval-uri]
                  [:.btn] (html/set-attr :href approval-uri))
@@ -74,9 +80,9 @@
 (defn contacts [request]
   (apply str (base {:title "shelver - Contacts"} request)))
 
-(defn sign-up [register-endpoint request]
+(defn sign-up [register-endpoint login-endpoint request]
   (apply str (base {:title "shelver - Sign Up"
-                    :main  (credentials-snip register-endpoint)
+                    :main  (credentials-snip register-endpoint login-endpoint)
                     :scripts [(html/html [:script {:src "/js/validator.js"}]) (html/html [:script {:src "/js/credentials.js"}])]}
                    request)))
 
