@@ -49,4 +49,4 @@
     (let [dirty-user {:email    (str (java.util.UUID/randomUUID) "@shelver.com")
                       :password "password"}]
       (user/register-user datomic crypto-client oauth-client dirty-user)
-      (is (true? (user/login datomic crypto-client dirty-user))))))
+      (is (some? (user/login datomic crypto-client dirty-user))))))

@@ -48,6 +48,15 @@
       "/path?q1" "/target"
       "/path?q1=v1" "/target")))
 
+(deftest resolve-nil
+  (testing "Test resolve when param doesn't exist or is invalid"
+    (are [tc]
+      (nil? (resolve-redirect-next tc))
+
+      "http://host.com/path"
+      "http://host.com/path?next="
+      "http://host.com/path?next=,,")))
+
 (deftest resolve-roundtrip
   (testing "Test redirect roundtrip, different redirects"
     (are [tc]

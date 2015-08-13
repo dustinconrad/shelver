@@ -62,23 +62,24 @@
     (when-let [redirect-param (some->> query-pairs
                                        (map #(clojure.string/split % #"="))
                                        (some (fn [[k v]] (when (= redirect-key k) v))))]
-      (-> (java.util.Base64/getUrlDecoder)
-          (.decode redirect-param)
-          (String. "UTF-8")))))
+      (try
+        (-> (java.util.Base64/getUrlDecoder)
+            (.decode redirect-param)
+            (String. "UTF-8"))
+        (catch IllegalArgumentException _ nil)))))
 
 (def resolve-redirect-next (partial resolve-redirect "next"))
 
 (defn logout [request]
   (let [updated-session (dissoc (:session request) :identity)]
     (-> (redirect "/")
-        (render request)
         (assoc :session updated-session))))
 
 (defn login [datomic crypto-client request]
   (when-let [existing (user/login datomic crypto-client (:params request))]
     (let [new-ident (:email existing)
           updated-session (assoc (:session request) :identity new-ident)]
-      (-> (redirect "/")
+      (-> (redirect (or (resolve-redirect-next (get-in request [:headers "referer"])) "/"))
           (assoc :session updated-session)))))
 
 (defn wrap-check-auth [handler login-path]

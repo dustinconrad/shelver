@@ -14,12 +14,14 @@
 
 (defn register-user [datomic crypto-client oauth-client dirty-user]
   (when (validate-user dirty-user)
-    (let [user (normalize-user dirty-user)
-          request-token (-> (oauth/request-token oauth-client nil)
-                            (assoc :type :request))]
-      (when @(ud/create-user (:conn datomic) crypto-client (assoc user :oauth-token request-token))
+    (let [request-token (-> (oauth/request-token oauth-client nil)
+                            (assoc :type :request))
+          user (-> (normalize-user dirty-user)
+                   (assoc :oauth-token request-token))]
+      (when @(ud/create-user (:conn datomic) crypto-client user)
         (->> request-token
-             (oauth/user-approval-uri oauth-client))))))
+             (oauth/user-approval-uri oauth-client)
+             (vector user))))))
 
 (defn confirm-registration [datomic oauth-client oauth_token dirty-user-email]
   (let [user-email (clojure.string/lower-case dirty-user-email)

@@ -92,9 +92,9 @@
                    request)))
 
 (defn register [datomic crypto-client oauth-client request]
-  (let [approval-uri (user/register-user datomic crypto-client oauth-client (:params request))]
+  (let [[user approval-uri] (user/register-user datomic crypto-client oauth-client (:params request))]
     (when approval-uri
-      (let [new-ident (get-in request [:params :email])
+      (let [new-ident (:email user)
             updated-request (-> (assoc request :identity new-ident)
                                 (assoc-in [:session :identity] new-ident))]
         (-> (apply str (base {:title "shelver - Register"
