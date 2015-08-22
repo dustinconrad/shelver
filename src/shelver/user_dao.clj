@@ -6,14 +6,15 @@
 (defn- ->enum [ns field value]
   (keyword (format "%s.%s/%s" ns (name field) (name value))))
 
-(defn- ->entity [ns model]
+(defn ->entity [ns model]
   (into {} (map (fn [[k v]]
                   (let [new-key (if (= "id" (name k))
                                   (keyword "db" (name k))
                                   (keyword ns (name k)))
-                        new-val (if (keyword? v)
-                                  (->enum ns k v)
-                                  v)]
+                        new-val (cond
+                                  (keyword? v) (->enum ns k v)
+                                  (map? v) (->entity (name k) v)
+                                  :default v)]
                     (vector new-key new-val)))
                 model)))
 
@@ -42,6 +43,10 @@
           [token-entity
            (assoc user-entity :user/oauth-token #db/id[:db.part/user -1])])
         [user-entity]))))
+
+;(defn update-user [datomic-conn crypto-client user]
+;  (let [user-entity (dissoc user :email :password-hash :password-salt)
+;        ]))
 
 (defn find-user [datomic-db email]
   (some-> (q '[:find (pull ?u [* {:user/oauth-token [*]}])
