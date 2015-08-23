@@ -18,6 +18,26 @@
                     (vector new-key new-val)))
                 model)))
 
+(defn ->entities [ns model]
+  (loop [entity {}
+         sub-entities '()
+         [[k v] & kvs] (seq model)]
+    (if k
+      (let [new-key (if (= "id" (name k))
+                      (keyword "db" (name k))
+                      (keyword ns (name k)))
+            [sube & _ :as subes] (when (map? v)
+                           (-> (->entities (name k) v)
+                               (update-in [0 :db/id] #(or % (d/tempid :db.part/user)))))
+            new-val (cond
+                      (keyword? v) (->enum ns k v)
+                      (some? sube) (get sube :db/id)
+                      :default v)]
+        (recur (assoc entity new-key new-val)
+               (concat sub-entities subes)
+               kvs))
+      (vec (conj sub-entities entity)))))
+
 (defn ->model [entity]
   (into {} (map (fn [[k v]]
                   (let [new-key (keyword (name k))
