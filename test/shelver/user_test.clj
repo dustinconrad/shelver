@@ -1,11 +1,9 @@
 (ns shelver.user-test
   (:require [clojure.test :refer :all]
             [shelver.util :refer :all]
-            [shelver.user-dao :as ud]
             [shelver.user :as user]
             [shelver.crypto :as crypto]
             [shelver.datomic :refer [new-datomic]]
-            [datomic.api :as d :refer [db q]]
             [com.stuartsierra.component :as component]))
 
 (defn mock-oauth-client []
